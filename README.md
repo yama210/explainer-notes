@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 理解整理ノート (MVP)
 
-## Getting Started
+学習内容を「説明できる形」で整理するためのノートアプリです。  
+Next.js App Router / TypeScript / Tailwind / Prisma / PostgreSQL / Zod で実装しています。
 
-First, run the development server:
+## 機能
+
+- ノートCRUD（作成 / 一覧 / 詳細 / 編集 / 削除）
+- タグの複数付与・タグ絞り込み
+- subject（programming / english / other）絞り込み
+- タイトル・本文検索
+- テンプレート選択式ノート（concept / error / phrase / procedure）
+
+## セットアップ
+
+1. 依存関係をインストール
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. `.env` を作成してDB接続文字列を設定
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/explainer_notes?schema=public"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Prisma Client生成
 
-## Learn More
+```bash
+pnpm prisma:generate
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. マイグレーション
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm prisma:migrate --name mvp_notes
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. 開発サーバ起動
 
-## Deploy on Vercel
+```bash
+pnpm dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## PostgreSQLをDockerで起動する場合
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+docker compose up -d db
+```
+
+`docker-compose.yaml` の `db` サービスを利用できます。

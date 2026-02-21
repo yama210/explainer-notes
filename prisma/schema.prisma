@@ -13,12 +13,46 @@ datasource db {
   provider = "postgresql"
 }
 
-model NoteItem {
-  id        String   @id @default(cuid())
+enum NoteType {
+  concept
+  error
+  phrase
+  procedure
+}
+
+enum Subject {
+  programming
+  english
+  other
+}
+
+model Note {
+  id        String    @id @default(cuid())
   title     String
-  body      String   @default("")
-  status    String   @default("draft") // draft | in_progress | done
-  tags      String   @default("")      // "tag1,tag2" の簡易運用
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  content   String
+  noteType  NoteType
+  subject   Subject
+  noteTags  NoteTag[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  noteTags  NoteTag[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model NoteTag {
+  noteId    String
+  tagId     String
+  note      Note      @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@id([noteId, tagId])
+  @@index([tagId])
 }
