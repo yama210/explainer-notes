@@ -25,13 +25,18 @@ services:
       - .env.docker
     ports:
       - "3000:3000"
+    environment:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
     volumes:
       - .:/app
       - node_modules:/app/node_modules
     depends_on:
       db:
         condition: service_healthy
-    command: ["pnpm", "dev", "-H", "0.0.0.0", "-p", "3000"]
+    command: ["sh", "./scripts/docker-dev-entrypoint.sh"]
 
 volumes:
   db_data:

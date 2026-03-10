@@ -1,58 +1,58 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-enum NoteType {
-  concept
-  error
-  phrase
-  procedure
-}
-
-enum Subject {
-  programming
-  english
-  other
+enum NoteStatus {
+  DRAFT
+  REVIEWING
+  EXPLAINABLE
+  ARCHIVED
 }
 
 model Note {
-  id        String    @id @default(cuid())
-  title     String
-  content   String
-  noteType  NoteType
-  subject   Subject
-  noteTags  NoteTag[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id             String         @id @default(cuid())
+  title          String
+  summary        String         @default("")
+  explanation    String         @default("")
+  stuckPoints    String         @default("")
+  nextActions    String         @default("")
+  body           String         @default("")
+  tags           String[]       @default([])
+  status         NoteStatus     @default(DRAFT)
+  needsReview    Boolean        @default(false)
+  reviewDueAt    DateTime?
+  reviewCount    Int            @default(0)
+  lastReviewedAt DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  revisions      NoteRevision[]
+
+  @@index([updatedAt(sort: Desc)])
+  @@index([status, updatedAt(sort: Desc)])
+  @@index([needsReview, reviewDueAt])
 }
 
-model Tag {
-  id        String    @id @default(cuid())
-  name      String
-  slug      String    @unique
-  noteTags  NoteTag[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
+model NoteRevision {
+  id             String     @id @default(cuid())
+  noteId         String
+  title          String
+  summary        String     @default("")
+  explanation    String     @default("")
+  stuckPoints    String     @default("")
+  nextActions    String     @default("")
+  body           String     @default("")
+  tags           String[]   @default([])
+  status         NoteStatus
+  needsReview    Boolean    @default(false)
+  reviewDueAt    DateTime?
+  reviewCount    Int        @default(0)
+  lastReviewedAt DateTime?
+  createdAt      DateTime   @default(now())
+  note           Note       @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
-model NoteTag {
-  noteId    String
-  tagId     String
-  note      Note      @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
-
-  @@id([noteId, tagId])
-  @@index([tagId])
+  @@index([noteId, createdAt(sort: Desc)])
 }

@@ -1,58 +1,57 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { updateNoteAction } from "@/app/notes/actions";
-import { NoteForm } from "@/components/notes/NoteForm";
-import { parseTemplateContent } from "@/lib/note-content";
-import { prisma } from "@/lib/prisma";
+import { PageIntro } from "@/components/layout/page-intro";
+import { NoteForm } from "@/components/note/note-form";
+import { formatDateInput } from "@/lib/format";
+import { getNoteForEdit } from "@/lib/notes";
+
+export const dynamic = "force-dynamic";
 
 type EditNotePageProps = {
-  params: Promise<{ id: string }>;
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export const metadata = {
+  title: "ノートを編集",
 };
 
 export default async function EditNotePage({ params }: EditNotePageProps) {
   const { id } = await params;
-  const note = await prisma.note.findUnique({
-    where: { id },
-    include: {
-      noteTags: {
-        include: { tag: true },
-        orderBy: { createdAt: "asc" },
-      },
-    },
-  });
-
-  if (!note) {
-    notFound();
-  }
-
-  const fields = parseTemplateContent(note.noteType, note.content) ?? {};
-  const action = updateNoteAction.bind(null, note.id);
+  const note = await getNoteForEdit(id);
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 px-4 py-10 md:px-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-slate-900">ノート編集</h1>
-        <p className="text-sm text-slate-600">既存内容を更新して保存します。</p>
-      </header>
+    <main className="space-y-8 pb-12">
+      <PageIntro
+        eyebrow="ノートを編集"
+        title={note.title}
+        description="説明の言い回し、つまずき、次にやることを少しずつ整えていくための編集画面です。編集中の内容は自動保存されます。"
+      >
+        <div className="flex flex-wrap gap-2 text-sm text-[var(--muted)]">
+          <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1.5">
+            タグ {note.tags.length > 0 ? note.tags.join(", ") : "なし"}
+          </span>
+          <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1.5">
+            復習 {note.needsReview ? "あり" : "なし"}
+          </span>
+        </div>
+      </PageIntro>
 
       <NoteForm
-        action={action}
-        submitLabel="更新する"
-        initialData={{
+        mode="edit"
+        noteId={note.id}
+        initialValues={{
           title: note.title,
-          noteType: note.noteType,
-          subject: note.subject,
-          tagsText: note.noteTags.map((item) => item.tag.name).join(", "),
-          fields,
+          summary: note.summary,
+          explanation: note.explanation,
+          stuckPoints: note.stuckPoints,
+          nextActions: note.nextActions,
+          body: note.body,
+          tagsText: note.tags.join(", "),
+          status: note.status,
+          needsReview: note.needsReview,
+          reviewDueAt: formatDateInput(note.reviewDueAt),
         }}
       />
-
-      <Link
-        href={`/notes/${note.id}`}
-        className="inline-block text-sm text-slate-600 hover:text-slate-900"
-      >
-        ← 詳細へ戻る
-      </Link>
     </main>
   );
 }

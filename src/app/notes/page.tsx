@@ -1,146 +1,128 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { isSubject, SUBJECTS, SUBJECT_LABELS } from "@/lib/note-template";
-import { NoteCard } from "@/components/notes/NoteCard";
+import { PageIntro } from "@/components/layout/page-intro";
+import { SectionIntro } from "@/components/layout/section-intro";
+import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { EmptyState } from "@/components/empty-state";
+import { ActiveFilters } from "@/components/note/active-filters";
+import { FilterForm } from "@/components/note/filter-form";
+import { NoteCard } from "@/components/note/note-card";
+import { buildNotesHref } from "@/lib/note-links";
+import { listNotes } from "@/lib/notes";
+import { noteListQuerySchema } from "@/lib/validation";
 
-type SearchParams = {
-  q?: string | string[];
-  subject?: string | string[];
-  tag?: string | string[];
-};
+export const dynamic = "force-dynamic";
 
 type NotesPageProps = {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function NotesPage({ searchParams }: NotesPageProps) {
-  const params = await searchParams;
-  const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q;
-  const rawSubject = Array.isArray(params.subject)
-    ? params.subject[0]
-    : params.subject;
-  const rawTag = Array.isArray(params.tag) ? params.tag[0] : params.tag;
+  const rawSearchParams = await searchParams;
+  const filters = noteListQuerySchema.parse({
+    q: getSingleValue(rawSearchParams.q),
+    status: getSingleValue(rawSearchParams.status),
+    tag: getSingleValue(rawSearchParams.tag),
+    sort: getSingleValue(rawSearchParams.sort),
+    review: getSingleValue(rawSearchParams.review),
+  });
 
-  const query = rawQuery?.trim() ?? "";
-  const normalizedSubject = rawSubject ?? "";
-  const subject = isSubject(normalizedSubject) ? normalizedSubject : "all";
-  const tagSlug = rawTag?.trim() ?? "";
-
-  const whereClause = {
-    ...(subject !== "all" ? { subject } : {}),
-    ...(tagSlug
-      ? {
-          noteTags: {
-            some: {
-              tag: {
-                slug: tagSlug,
-              },
-            },
-          },
-        }
-      : {}),
-    ...(query
-      ? {
-          OR: [
-            { title: { contains: query, mode: "insensitive" as const } },
-            { content: { contains: query, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
-  };
-
-  const [notes, allTags] = await Promise.all([
-    prisma.note.findMany({
-      where: whereClause,
-      include: {
-        noteTags: {
-          include: { tag: true },
-          orderBy: { createdAt: "asc" },
-        },
-      },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.tag.findMany({
-      orderBy: { name: "asc" },
-    }),
-  ]);
+  const { notes, total, availableTags, stats, reviewQueue, overdueNotes } =
+    await listNotes(filters);
+  const hasFilters = Boolean(
+    filters.q || filters.tag || filters.status !== "ALL" || filters.review !== "all",
+  );
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-4 py-10 md:px-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-slate-900">ノート一覧</h1>
-        <p className="text-sm text-slate-600">検索・フィルタしながら理解ノートを管理できます。</p>
-      </header>
+    <main className="space-y-10 pb-12">
+      <PageIntro
+        eyebrow="ノート一覧"
+        title="学習ノートを、理解の流れごとに整理する"
+        description="キーワード、ステータス、タグ、復習条件で絞り込みながら、いま見直すべきノートを探せます。検索条件は URL に残るので、そのまま再訪や共有にも使えます。"
+        actions={
+          <>
+            <Link
+              href={buildNotesHref({ review: "needs_review" })}
+              className="action-secondary px-5 py-3"
+            >
+              復習するノートへ
+            </Link>
+            <Link href="/notes/new" className="action-primary px-5 py-3">
+              新しいノート
+            </Link>
+          </>
+        }
+      />
 
-      <form className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 md:grid-cols-3">
-          <input
-            name="q"
-            defaultValue={query}
-            placeholder="タイトル/本文を検索"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none ring-blue-200 focus:ring-2"
+      <DashboardStats stats={stats} reviewQueue={reviewQueue} overdueNotes={overdueNotes} />
+      <FilterForm filters={filters} availableTags={availableTags} />
+      <ActiveFilters filters={filters} />
+
+      <section className="page-section space-y-5">
+        <SectionIntro
+          title={hasFilters ? "絞り込み結果" : "すべてのノート"}
+          description={`${total} 件のノートがあります。`}
+          action={
+            <div className="flex flex-wrap gap-3 text-sm">
+              <Link
+                href={buildNotesHref({ review: "needs_review" })}
+                className="text-[var(--accent)]"
+              >
+                復習対象を見る
+              </Link>
+              <Link
+                href={buildNotesHref({ review: "overdue" })}
+                className="text-[var(--accent)]"
+              >
+                期限切れを見る
+              </Link>
+            </div>
+          }
+        />
+
+        {notes.length > 0 ? (
+          <div className="space-y-4">
+            {notes.map((note) => (
+              <NoteCard key={note.id} note={note} />
+            ))}
+          </div>
+        ) : hasFilters ? (
+          <EmptyState
+            title="条件に合うノートが見つかりませんでした"
+            description="キーワードやタグを少し広げるか、復習条件を外して探してみてください。"
+            primaryHref={buildNotesHref()}
+            primaryLabel="絞り込みをリセット"
+            secondaryHref="/notes/new"
+            secondaryLabel="新しく作成する"
+            tips={[
+              "タグだけでなく、タイトルや要点の言い回しも変えてみる",
+              "復習条件は「期限切れ」より「復習対象のみ」の方が広く探せる",
+              "新しく作るなら、まずは一言で言える要点から書き始める",
+            ]}
           />
-
-          <select
-            name="subject"
-            defaultValue={subject}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none ring-blue-200 focus:ring-2"
-          >
-            <option value="all">すべての分野</option>
-            {SUBJECTS.map((item) => (
-              <option key={item} value={item}>
-                {SUBJECT_LABELS[item]}
-              </option>
-            ))}
-          </select>
-
-          <select
-            name="tag"
-            defaultValue={tagSlug}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none ring-blue-200 focus:ring-2"
-          >
-            <option value="">すべてのタグ</option>
-            {allTags.map((tag) => (
-              <option key={tag.id} value={tag.slug}>
-                {tag.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            絞り込み
-          </button>
-          <Link
-            href="/notes"
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            リセット
-          </Link>
-          <Link
-            href="/notes/new"
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            新規作成
-          </Link>
-        </div>
-      </form>
-
-      {notes.length > 0 ? (
-        <ul className="space-y-3">
-          {notes.map((note) => (
-            <NoteCard key={note.id} note={note} />
-          ))}
-        </ul>
-      ) : (
-        <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-slate-600">
-          条件に一致するノートがありません。
-        </p>
-      )}
+        ) : (
+          <EmptyState
+            title="まだノートがありません"
+            description="最初の 1 件を書くと、ここに理解の流れごとのノートが並びます。"
+            primaryHref="/notes/new"
+            primaryLabel="最初のノートを書く"
+            secondaryHref="/"
+            secondaryLabel="ホームへ戻る"
+            tips={[
+              "タイトルは、あとから一覧で見返したときに分かる言葉にする",
+              "要点には一言で説明できる内容を先に置く",
+              "説明には自分の言葉で理解の流れを書く",
+            ]}
+          />
+        )}
+      </section>
     </main>
   );
+}
+
+function getSingleValue(value: string | string[] | undefined) {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
 }

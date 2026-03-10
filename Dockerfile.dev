@@ -2,12 +2,16 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# pnpm
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 RUN corepack enable
 
-# 依存関係だけ先に入れる（キャッシュ効く）
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install
+# 依存関係の定義ファイルだけ先にコピーして、Docker のキャッシュを効かせる
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
+RUN pnpm install --frozen-lockfile
 
-# ソースはcomposeのvolumeでマウントするのでCOPYしなくてもOK
 EXPOSE 3000
