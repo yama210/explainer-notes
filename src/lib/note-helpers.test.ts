@@ -20,7 +20,7 @@ describe("note helpers", () => {
 
   it("builds a prisma where clause from list filters", () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-03-08T09:00:00+09:00"));
+    vi.setSystemTime(new Date(2026, 2, 8, 9, 0, 0));
 
     expect(
       buildNoteWhere({
@@ -37,7 +37,7 @@ describe("note helpers", () => {
         {
           needsReview: true,
           reviewDueAt: {
-            lt: new Date("2026-03-08T00:00:00.000+09:00"),
+            lt: new Date(2026, 2, 8, 0, 0, 0),
           },
         },
         {
@@ -74,7 +74,7 @@ describe("note helpers", () => {
 
   it("builds dashboard stats and review lists", () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-03-08T09:00:00+09:00"));
+    vi.setSystemTime(new Date(2026, 2, 8, 9, 0, 0));
 
     const notes = [
       {
@@ -200,11 +200,11 @@ describe("note helpers", () => {
 
   it("calculates the next review date from the review count", () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-03-08T09:00:00+09:00"));
+    vi.setSystemTime(new Date(2026, 2, 8, 9, 0, 0));
 
     expect(getNextReviewIntervalDays(0)).toBe(1);
     expect(getNextReviewIntervalDays(1)).toBe(3);
-    expect(getNextReviewDueAt(0)).toEqual(new Date("2026-03-09T00:00:00+09:00"));
-    expect(getNextReviewDueAt(2)).toEqual(new Date("2026-03-15T00:00:00+09:00"));
+    expect(getNextReviewDueAt(0)).toEqual(new Date(2026, 2, 9, 0, 0, 0));
+    expect(getNextReviewDueAt(2)).toEqual(new Date(2026, 2, 15, 0, 0, 0));
   });
 });

@@ -148,7 +148,7 @@ describe("notes service", () => {
 
   it("builds dashboard data from repository responses", async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-03-11T09:00:00+09:00"));
+    vi.setSystemTime(new Date(2026, 2, 11, 9, 0, 0));
 
     repositoryMock.findRecentNotes.mockResolvedValue([
       {
@@ -282,7 +282,7 @@ describe("notes service", () => {
 
   it("completes review, updates status and returns interval metadata", async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-03-11T09:00:00+09:00"));
+    vi.setSystemTime(new Date(2026, 2, 11, 9, 0, 0));
 
     repositoryMock.findNoteForEdit.mockResolvedValue({
       id: "note-1",
@@ -326,7 +326,7 @@ describe("notes service", () => {
       expect.objectContaining({
         status: NoteStatus.EXPLAINABLE,
         reviewCount: 2,
-        reviewDueAt: new Date("2026-03-14T00:00:00+09:00"),
+        reviewDueAt: new Date(2026, 2, 14, 0, 0, 0),
       }),
     );
     expect(result.intervalDays).toBe(3);
