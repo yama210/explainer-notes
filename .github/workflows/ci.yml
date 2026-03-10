@@ -11,6 +11,8 @@ jobs:
   verify:
     name: Lint, Unit Test, Build
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/explainer_notes?schema=public
 
     steps:
       - name: Checkout
