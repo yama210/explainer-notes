@@ -1,24 +1,41 @@
 CREATE TYPE "NoteStatus" AS ENUM ('DRAFT', 'REVIEWING', 'EXPLAINABLE', 'ARCHIVED');
 
-DROP TABLE IF EXISTS "NoteItem";
+ALTER TABLE "Note"
+ADD COLUMN "summary" TEXT NOT NULL DEFAULT '',
+ADD COLUMN "explanation" TEXT NOT NULL DEFAULT '',
+ADD COLUMN "stuckPoints" TEXT NOT NULL DEFAULT '',
+ADD COLUMN "nextActions" TEXT NOT NULL DEFAULT '',
+ADD COLUMN "body" TEXT NOT NULL DEFAULT '',
+ADD COLUMN "tags" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "status" "NoteStatus" NOT NULL DEFAULT 'DRAFT',
+ADD COLUMN "needsReview" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "reviewDueAt" TIMESTAMP(3);
 
-CREATE TABLE "Note" (
-    "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "summary" TEXT NOT NULL DEFAULT '',
-    "explanation" TEXT NOT NULL DEFAULT '',
-    "stuckPoints" TEXT NOT NULL DEFAULT '',
-    "nextActions" TEXT NOT NULL DEFAULT '',
-    "body" TEXT NOT NULL DEFAULT '',
-    "tags" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
-    "status" "NoteStatus" NOT NULL DEFAULT 'DRAFT',
-    "needsReview" BOOLEAN NOT NULL DEFAULT false,
-    "reviewDueAt" TIMESTAMP(3),
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+UPDATE "Note"
+SET "body" = "content";
 
-    CONSTRAINT "Note_pkey" PRIMARY KEY ("id")
-);
+UPDATE "Note" AS "note"
+SET "tags" = COALESCE("tag_map"."tags", ARRAY[]::TEXT[])
+FROM (
+    SELECT
+        "NoteTag"."noteId",
+        ARRAY_AGG(LOWER("Tag"."name") ORDER BY LOWER("Tag"."name")) AS "tags"
+    FROM "NoteTag"
+    INNER JOIN "Tag" ON "Tag"."id" = "NoteTag"."tagId"
+    GROUP BY "NoteTag"."noteId"
+) AS "tag_map"
+WHERE "note"."id" = "tag_map"."noteId";
+
+ALTER TABLE "Note"
+DROP COLUMN "content",
+DROP COLUMN "noteType",
+DROP COLUMN "subject";
+
+DROP TABLE "NoteTag";
+DROP TABLE "Tag";
+
+DROP TYPE "NoteType";
+DROP TYPE "Subject";
 
 CREATE TABLE "NoteRevision" (
     "id" TEXT NOT NULL,
