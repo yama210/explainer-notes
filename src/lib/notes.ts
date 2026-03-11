@@ -4,9 +4,7 @@ import {
   buildDashboardStats,
   buildNoteWhere,
   buildOverdueReviewList,
-  buildRevisionDiff,
   buildReviewQueue,
-  collectTopTags,
   getNextReviewDueAt,
   getNextReviewIntervalDays,
   getOrderBy,
@@ -17,23 +15,21 @@ import {
 } from "./note-helpers";
 import {
   countNotes,
-  createNoteWithRevision,
+  createNoteRecord,
   findAllNoteTags,
   findDashboardStatsNotes,
-  findNoteByIdWithRevisions,
+  findNoteById,
   findNoteForEdit as findEditableNote,
   findNotesForList,
   findNotesForStats,
   findRecentNotes,
   findRelatedNoteCandidates,
-  findRevisionForNote,
   findTodayReviewNotes,
   removeNote,
-  restoreRevisionWithSnapshot,
-  updateNoteWithRevision,
-  updateReviewStateWithRevision,
+  updateNoteRecord,
+  updateReviewState,
 } from "./note-repository";
-import type { NoteListRecord, NoteRevisionRecord } from "./note-repository";
+import type { NoteListRecord } from "./note-repository";
 import type { NoteInput, NoteListQuery } from "./validation";
 
 export async function listNotes(filters: NoteListQuery) {
@@ -50,7 +46,19 @@ export async function listNotes(filters: NoteListQuery) {
   return {
     notes,
     total,
-    availableTags: collectTopTags(allTags).slice(0, 10),
+    availableTags: allTags
+      .flatMap((record) => record.tags)
+      .reduce<Array<{ tag: string; count: number }>>((acc, tag) => {
+        const existing = acc.find((item) => item.tag === tag);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          acc.push({ tag, count: 1 });
+        }
+        return acc;
+      }, [])
+      .sort((left, right) => right.count - left.count || left.tag.localeCompare(right.tag))
+      .slice(0, 10),
     stats: buildDashboardStats(allNotesForStats),
     reviewQueue: buildReviewQueue(allNotesForStats, 4),
     overdueNotes: buildOverdueReviewList(allNotesForStats, 4),
@@ -79,12 +87,8 @@ export async function getDashboardData() {
   };
 }
 
-export async function getNoteById(
-  id: string,
-  revisionId?: string,
-  relatedPresetInput?: string,
-) {
-  const note = await findNoteByIdWithRevisions(id);
+export async function getNoteById(id: string, relatedPresetInput?: string) {
+  const note = await findNoteById(id);
 
   if (!note) {
     notFound();
@@ -94,22 +98,11 @@ export async function getNoteById(
   const relatedWeights = resolveRelatedNoteWeights(relatedPreset);
   const relatedCandidates = await findRelatedNoteCandidates(note.id, 24);
   const relatedMatches = matchRelatedNotes(note, relatedCandidates, 3, relatedWeights);
-  const selectedRevision =
-    note.revisions.find((revision) => revision.id === revisionId) ?? note.revisions[0] ?? null;
-  const selectedIndex = selectedRevision
-    ? note.revisions.findIndex((revision) => revision.id === selectedRevision.id)
-    : -1;
-  const previousRevision =
-    selectedIndex >= 0 && selectedIndex < note.revisions.length - 1
-      ? note.revisions[selectedIndex + 1]
-      : null;
 
   return {
     note,
     relatedMatches,
     relatedPreset,
-    selectedRevision,
-    revisionDiff: selectedRevision ? buildRevisionDiff(selectedRevision, previousRevision) : [],
   };
 }
 
@@ -124,11 +117,11 @@ export async function getNoteForEdit(id: string) {
 }
 
 export async function createNote(input: NoteInput) {
-  return createNoteWithRevision(input);
+  return createNoteRecord(input);
 }
 
 export async function updateNote(id: string, input: NoteInput) {
-  return updateNoteWithRevision(id, input);
+  return updateNoteRecord(id, input);
 }
 
 export async function completeReview(id: string) {
@@ -143,7 +136,7 @@ export async function completeReview(id: string) {
   const nextReviewDueAt = getNextReviewDueAt(note.reviewCount);
   const nextStatus = getNextStatusAfterReview(note.status, nextReviewCount);
 
-  const updatedNote = await updateReviewStateWithRevision(id, {
+  const updatedNote = await updateReviewState(id, {
     status: nextStatus,
     needsReview: true,
     reviewDueAt: nextReviewDueAt,
@@ -159,20 +152,9 @@ export async function completeReview(id: string) {
   };
 }
 
-export async function restoreRevision(noteId: string, revisionId: string) {
-  const revision = await findRevisionForNote(noteId, revisionId);
-
-  if (!revision) {
-    notFound();
-  }
-
-  return restoreRevisionWithSnapshot(noteId, revision);
-}
-
 export async function deleteNote(id: string) {
   await removeNote(id);
 }
 
 export type ListNoteItem = NoteListRecord;
-export type NoteRevisionItem = NoteRevisionRecord;
 export type { RelatedNotePreset };

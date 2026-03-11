@@ -1,13 +1,10 @@
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 
 type PageIntroProps = {
-  eyebrow?: string;
+  eyebrow: string;
   title: string;
-  description?: string;
+  description: string;
   actions?: ReactNode;
-  children?: ReactNode;
-  className?: string;
 };
 
 export function PageIntro({
@@ -15,26 +12,25 @@ export function PageIntro({
   title,
   description,
   actions,
-  children,
-  className,
 }: PageIntroProps) {
   return (
-    <section
-      className={cn(
-        "page-section flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between",
-        className,
-      )}
-    >
-      <div className="max-w-3xl space-y-3">
-        {eyebrow ? <p className="text-sm text-[var(--muted)]">{eyebrow}</p> : null}
-        <h1 className="text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">{title}</h1>
-        {description ? (
-          <p className="max-w-2xl text-sm leading-8 text-[var(--muted)]">{description}</p>
+    <section className="page-section py-4">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,4fr)_auto] lg:items-end">
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-[var(--accent)]">{eyebrow}</p>
+          <h1 className="max-w-5xl font-heading text-3xl font-bold tracking-tight text-[var(--foreground)] sm:text-4xl">
+            {title}
+          </h1>
+          <p className="max-w-4xl text-base leading-relaxed text-[var(--muted)]">
+            {description}
+          </p>
+        </div>
+        {actions ? (
+          <div className="flex flex-wrap gap-3 lg:justify-end lg:self-end">
+            {actions}
+          </div>
         ) : null}
-        {children}
       </div>
-
-      {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
     </section>
   );
 }

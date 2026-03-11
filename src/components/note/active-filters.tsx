@@ -9,7 +9,7 @@ type ActiveFiltersProps = {
 
 const reviewLabels: Record<NoteListQuery["review"], string> = {
   all: "すべて",
-  needs_review: "復習対象のみ",
+  needs_review: "要復習",
   due_soon: "近日中に復習",
   overdue: "期限切れ",
 };
@@ -30,12 +30,13 @@ export function ActiveFilters({ filters }: ActiveFiltersProps) {
   }
 
   if (filters.review !== "all") {
-    chips.push(`復習条件: ${reviewLabels[filters.review]}`);
+    chips.push(`復習: ${reviewLabels[filters.review]}`);
   }
 
   if (filters.sort !== "updated_desc") {
     const sortLabel =
-      sortOptions.find((option) => option.value === filters.sort)?.label ?? filters.sort;
+      sortOptions.find((option) => option.value === filters.sort)?.label ??
+      filters.sort;
     chips.push(`並び順: ${sortLabel}`);
   }
 
@@ -44,16 +45,22 @@ export function ActiveFilters({ filters }: ActiveFiltersProps) {
   }
 
   return (
-    <div className="page-section flex flex-wrap items-center gap-2">
+    <div className="page-section flex flex-wrap items-center gap-2 py-2">
+      <span className="text-xs font-medium text-[var(--muted)]">
+        適用中の条件:
+      </span>
       {chips.map((chip) => (
         <span
           key={chip}
-          className="rounded-full bg-[var(--surface-muted)] px-3 py-1.5 text-sm text-[var(--muted)]"
+          className="rounded-md bg-[var(--accent-soft)] px-2.5 py-1 text-xs font-medium text-[var(--accent)]"
         >
           {chip}
         </span>
       ))}
-      <Link href={buildNotesHref()} className="text-sm text-[var(--accent)]">
+      <Link
+        href={buildNotesHref()}
+        className="ml-1 text-xs font-medium text-[var(--danger)] hover:underline"
+      >
         すべて解除
       </Link>
     </div>

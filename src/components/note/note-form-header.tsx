@@ -6,26 +6,35 @@ type NoteFormHeaderProps = {
 export function NoteFormHeader({ mode, autosaveState }: NoteFormHeaderProps) {
   return (
     <section className="quiet-panel px-5 py-5 sm:px-7">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-3xl space-y-2">
-          <div className="text-sm text-[var(--muted)]">
-            {mode === "create" ? "作成モード" : "編集中"}
+          <div className="text-xs font-medium uppercase tracking-wider text-[var(--muted)]">
+            {mode === "create" ? "新規作成" : "編集中"}
           </div>
-          <h2 className="text-xl font-semibold tracking-[-0.02em]">書き進め方の目安</h2>
-          <p className="text-sm leading-8 text-[var(--muted)]">
-            タイトルと要点で輪郭を決めてから、説明、つまずき、次にやることを順に足すと、
-            後から読んだときに理解の流れを追いやすくなります。
+          <h2 className="font-heading text-xl font-semibold text-[var(--foreground)]">
+            理解を整理しながら書き進める
+          </h2>
+          <p className="text-sm leading-relaxed text-[var(--muted)]">
+            タイトルと要点で全体像を決めてから、自分の言葉での説明、
+            つまずき、次にやることを書き足していく構成です。読み返したときに
+            迷わないノートになるよう、必要な項目だけを静かに並べています。
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 text-sm text-[var(--muted)]">
-          <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1.5">
-            {mode === "create" ? "新規作成" : "編集"}
+        <div className="flex flex-wrap gap-2 text-sm">
+          <span className="rounded-md bg-[var(--accent-soft)] px-3 py-1.5 font-medium text-[var(--accent)]">
+            {mode === "create" ? "新しいノート" : "編集中"}
           </span>
           {mode === "edit" ? (
             <span
               data-testid="autosave-state"
-              className="rounded-full bg-[var(--surface-muted)] px-3 py-1.5"
+              className={`rounded-md px-3 py-1.5 font-medium ${
+                autosaveState === "saving"
+                  ? "bg-amber-50 text-amber-700"
+                  : autosaveState === "error"
+                    ? "bg-red-50 text-red-700"
+                    : "bg-emerald-50 text-emerald-700"
+              }`}
             >
               {autosaveText(autosaveState)}
             </span>

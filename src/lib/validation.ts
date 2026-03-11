@@ -53,7 +53,10 @@ export function startOfDay(base = new Date()) {
 export const noteInputSchema = z
   .object({
     title: z.string().trim().min(1, "タイトルは必須です。").max(120),
-    summary: z.string().trim().max(280, "要点は280文字以内で入力してください。"),
+    summary: z
+      .string()
+      .trim()
+      .max(280, "要点は280文字以内で入力してください。"),
     explanation: z
       .string()
       .trim()

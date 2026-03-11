@@ -5,12 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { buildNoteDetailHref } from "@/lib/note-links";
 import type { RelatedNotePreset } from "@/lib/notes";
+import { cn } from "@/lib/utils";
 
 type RelatedPresetControlsProps = {
   noteId: string;
   currentPreset: RelatedNotePreset;
-  revisionId?: string;
-  restoredFrom?: string;
 };
 
 const STORAGE_KEY = "explainer-notes:related-preset";
@@ -24,8 +23,6 @@ const presetLabels: Record<RelatedNotePreset, string> = {
 export function RelatedPresetControls({
   noteId,
   currentPreset,
-  revisionId,
-  restoredFrom,
 }: RelatedPresetControlsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -48,35 +45,32 @@ export function RelatedPresetControls({
     ) {
       router.replace(
         buildNoteDetailHref(noteId, {
-          revisionId,
           relatedPreset: storedPreset,
-          restoredFrom,
         }),
       );
       return;
     }
 
     localStorage.setItem(STORAGE_KEY, currentPreset);
-  }, [currentPreset, noteId, restoredFrom, revisionId, router, searchParams]);
+  }, [currentPreset, noteId, router, searchParams]);
 
   return (
-    <div className="flex flex-wrap gap-2 text-sm">
+    <div className="flex flex-wrap gap-1 rounded-lg border border-[var(--line-light)] bg-[var(--surface)] p-1 text-sm">
       {(Object.keys(presetLabels) as RelatedNotePreset[]).map((preset) => {
         const isActive = preset === currentPreset;
         return (
           <Link
             key={preset}
             href={buildNoteDetailHref(noteId, {
-              revisionId,
               relatedPreset: preset,
-              restoredFrom,
             })}
             onClick={() => localStorage.setItem(STORAGE_KEY, preset)}
-            className={`rounded-full px-3 py-1.5 transition ${
+            className={cn(
+              "rounded-md px-3 py-1.5 font-medium transition-colors",
               isActive
-                ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-                : "bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--accent)]"
-            }`}
+                ? "bg-white text-[var(--foreground)] shadow-sm"
+                : "text-[var(--muted)] hover:text-[var(--foreground)]",
+            )}
           >
             {presetLabels[preset]}
           </Link>

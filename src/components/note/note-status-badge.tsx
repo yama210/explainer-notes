@@ -12,7 +12,7 @@ export function NoteStatusBadge({ status }: NoteStatusBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium tracking-[0.02em]",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
         meta.classes,
       )}
     >

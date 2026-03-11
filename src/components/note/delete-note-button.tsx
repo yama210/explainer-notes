@@ -34,14 +34,14 @@ export function DeleteNoteButton({
       });
 
       if (!response.ok) {
-        throw new Error("ノートを削除できませんでした。");
+        throw new Error("ノートの削除に失敗しました。");
       }
 
       router.push("/notes");
       router.refresh();
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : "ノートを削除できませんでした。",
+        cause instanceof Error ? cause.message : "ノートの削除に失敗しました。",
       );
       setIsDeleting(false);
     }
@@ -53,7 +53,7 @@ export function DeleteNoteButton({
         type="button"
         onClick={handleDelete}
         disabled={isDeleting}
-        className="rounded-full bg-[var(--danger-soft)] px-4 py-2.5 text-sm text-[var(--danger)] transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-md bg-[var(--danger-soft)] px-4 py-2 text-sm font-medium text-[var(--danger)] transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isDeleting ? "削除中..." : "削除する"}
       </button>

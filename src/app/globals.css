@@ -1,16 +1,26 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Inter", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  --font-heading: "Outfit", var(--font-sans);
+}
+
 :root {
-  --background: #fcfbf8;
-  --foreground: #22211d;
-  --surface: #ffffff;
-  --surface-muted: #f5f3ed;
-  --line: #e7e2d6;
-  --muted: #6f6b61;
-  --accent: #355f56;
-  --accent-soft: #eef4f2;
-  --danger-soft: #faf0ee;
-  --danger: #9b4b3f;
+  --background: #ffffff;
+  --foreground: #1a1a2e;
+  --surface: #f8f9fb;
+  --surface-muted: #f1f3f6;
+  --surface-raised: #ffffff;
+  --line: #e2e5ea;
+  --line-light: #eef0f3;
+  --muted: #6b7280;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.08);
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.06);
+  --success: #059669;
+  --success-soft: rgba(5, 150, 105, 0.06);
 }
 
 @theme inline {
@@ -30,12 +40,13 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family:
-    "Hiragino Sans",
-    "Yu Gothic",
-    "Noto Sans JP",
-    sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.65;
+  letter-spacing: 0.01em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
 a {
@@ -51,7 +62,8 @@ textarea {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 18%, white);
+  background: var(--accent);
+  color: #fff;
 }
 
 .page-shell {
@@ -64,90 +76,116 @@ textarea {
   width: min(100%, 64rem);
 }
 
+/* Panel */
 .quiet-panel {
-  border-radius: 1.5rem;
+  border-radius: 0.75rem;
   background: var(--surface);
-  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  border: 1px solid var(--line-light);
 }
 
 .quiet-rule {
-  border-top: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
+  border-top: 1px solid var(--line-light);
 }
 
+/* Inputs */
 .field-control {
   width: 100%;
-  border-radius: 1rem;
-  border: 1px solid transparent;
-  background: var(--surface-muted);
-  padding: 0.9rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+  background: var(--background);
+  padding: 0.625rem 0.875rem;
   outline: none;
-  transition:
-    border-color 0.18s ease,
-    background-color 0.18s ease;
+  color: var(--foreground);
+  transition: border-color 0.15s ease;
 }
 
 .field-control:focus {
-  border-color: color-mix(in srgb, var(--accent) 35%, white);
-  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+/* Buttons */
 .action-primary {
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
   background: var(--accent);
   color: white;
-  transition: opacity 0.18s ease;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: background 0.15s ease;
 }
 
 .action-primary:hover {
-  opacity: 0.92;
+  background: var(--accent-hover);
+}
+
+.action-primary:active {
+  transform: scale(0.98);
 }
 
 .action-secondary {
-  border-radius: 999px;
-  background: var(--surface-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: var(--background);
   color: var(--foreground);
-  transition: background-color 0.18s ease;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: 1px solid var(--line);
+  transition: background 0.15s ease;
 }
 
 .action-secondary:hover {
-  background: color-mix(in srgb, var(--surface-muted) 70%, white);
+  background: var(--surface-muted);
 }
 
+.action-secondary:active {
+  transform: scale(0.98);
+}
+
+/* Markdown */
 .markdown-body {
   color: var(--foreground);
-  line-height: 1.95;
-  font-size: 0.98rem;
+  line-height: 1.8;
+  font-size: 1rem;
 }
 
 .markdown-body > * + * {
-  margin-top: 1.05rem;
+  margin-top: 1.25rem;
 }
 
 .markdown-body h1,
 .markdown-body h2,
 .markdown-body h3 {
+  font-family: var(--font-heading);
   font-weight: 600;
   line-height: 1.35;
-  letter-spacing: -0.01em;
+  color: var(--foreground);
 }
 
 .markdown-body h1 {
-  font-size: 1.8rem;
+  font-size: 1.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .markdown-body h2 {
   margin-top: 2rem;
   font-size: 1.35rem;
+  border-bottom: 1px solid var(--line-light);
+  padding-bottom: 0.5rem;
 }
 
 .markdown-body h3 {
   margin-top: 1.5rem;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
 }
 
 .markdown-body ul,
 .markdown-body ol {
-  padding-left: 1.3rem;
+  padding-left: 1.5rem;
 }
 
 .markdown-body ul {
@@ -159,36 +197,45 @@ textarea {
 }
 
 .markdown-body code {
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   background: var(--surface-muted);
-  padding: 0.14rem 0.38rem;
-  font-family:
-    "IBM Plex Mono",
-    "Cascadia Code",
-    monospace;
-  font-size: 0.9em;
+  padding: 0.15rem 0.35rem;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.85em;
+  color: var(--accent);
 }
 
 .markdown-body pre {
   overflow-x: auto;
-  border-radius: 1rem;
-  background: #f4f1ea;
-  padding: 1rem 1.1rem;
+  border-radius: 0.5rem;
+  background: #fafbfc;
+  border: 1px solid var(--line-light);
+  padding: 1rem;
 }
 
 .markdown-body pre code {
   background: transparent;
+  border: none;
   padding: 0;
+  color: var(--foreground);
+  font-size: 0.9em;
 }
 
 .markdown-body blockquote {
-  border-left: 3px solid color-mix(in srgb, var(--accent) 45%, white);
-  padding-left: 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 0.75rem 1rem;
+  border-radius: 0 0.375rem 0.375rem 0;
   color: var(--muted);
 }
 
 .markdown-body a {
   color: var(--accent);
   text-decoration: underline;
-  text-underline-offset: 0.18em;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.markdown-body a:hover {
+  color: var(--accent-hover);
 }

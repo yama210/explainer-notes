@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { EmptyState } from "@/components/empty-state";
+import { FocusCard } from "@/components/home/focus-card";
 import { PageIntro } from "@/components/layout/page-intro";
 import { SectionIntro } from "@/components/layout/section-intro";
-import { EmptyState } from "@/components/empty-state";
 import { NoteCard } from "@/components/note/note-card";
 import { buildNotesHref } from "@/lib/note-links";
 import { getDashboardData } from "@/lib/notes";
@@ -13,53 +14,66 @@ export default async function HomePage() {
     await getDashboardData();
 
   return (
-    <main className="space-y-14 pb-12">
+    <main className="space-y-16 pb-12">
       <PageIntro
         eyebrow="Explainer Notes"
-        title="理解を自分の言葉に変える、静かな学習ノート"
-        description="学んだ内容をただ残すのではなく、要点・説明・つまずき・次にやることへ分けて整理するためのノートアプリです。今日復習することと最近触った内容がすぐ分かるように整えています。"
+        title="学んだことを、自分の言葉で説明できるノートにする"
+        description="思いつきを書き留めるだけでなく、要点、説明、つまずき、次にやることまで整理して、理解の流れが残る学習ノートを目指します。"
         actions={
           <>
             <Link
               href={buildNotesHref({ review: "needs_review" })}
-              className="action-primary px-5 py-3"
+              className="action-primary px-6 py-3"
             >
               復習するノートを見る
             </Link>
-            <Link href="/notes/new" className="action-secondary px-5 py-3">
-              新しくノートを書く
+            <Link href="/notes/new" className="action-secondary px-6 py-3">
+              新しいノートを書く
             </Link>
           </>
         }
       />
 
-      <section className="page-section space-y-5">
+      <section className="page-section space-y-6">
         <SectionIntro
-          title="今日やること"
-          description="まず着手しやすいものを、復習・期限切れ・到達状況の3つに絞って確認できます。"
+          title="今日の学習"
+          description="今日の復習、期限切れ、説明できるノートを並べて、いま何を見るべきかをすぐ判断できるようにしています。"
           action={
-            <Link href={buildNotesHref()} className="text-sm text-[var(--accent)]">
-              ノート一覧へ
+            <Link
+              href={buildNotesHref()}
+              className="text-sm font-medium text-[var(--accent)] transition-colors hover:text-white"
+            >
+              ノート一覧へ &rarr;
             </Link>
           }
         />
 
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-5 lg:grid-cols-3">
           <FocusCard
             href={buildNotesHref({ review: "due_soon" })}
-            label="今日復習する"
+            label="今日の復習"
             value={`${todayReviewNotes.length}件`}
             description={
               todayReviewNotes.length > 0
-                ? "復習日が今日のノートです。短いものから見直していけます。"
-                : "今日が復習日のノートはありません。次の予定を見ておくと進めやすくなります。"
+                ? "今日のうちに見返したいノートがまとまっています。学習の最初に確認しておくと進めやすくなります。"
+                : "今日すぐに見返すノートはありません。次の復習候補を決めておくと、あとで迷いません。"
+            }
+            icon={
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             }
           />
           <FocusCard
             href={buildNotesHref({ review: "overdue" })}
             label="期限切れ"
             value={`${overdueNotes.length}件`}
-            description="後回しになっている復習です。ここから順に片付けると停滞が減ります。"
+            description="予定日を過ぎた復習ノートです。ここから先に手を付けると、学習の抜け漏れを減らせます。"
+            icon={
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            }
           />
           <FocusCard
             href={buildNotesHref({ status: "EXPLAINABLE" })}
@@ -67,23 +81,28 @@ export default async function HomePage() {
             value={`${stats.explainable}件`}
             description={
               reviewQueue.length > 0
-                ? `次に近い復習予定は「${reviewQueue[0]?.title ?? "未設定"}」です。`
-                : "説明できる段階まで育ったノートを一覧で見返せます。"
+                ? `次に見返す候補は「${reviewQueue[0]?.title ?? "未設定"}」です。`
+                : "理解が固まったノートを一覧で確認できます。"
+            }
+            icon={
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             }
           />
         </div>
       </section>
 
-      <section className="page-section space-y-5">
+      <section className="page-section space-y-6">
         <SectionIntro
           title="今日復習するノート"
-          description="今日が復習日のノートだけを並べています。学習を再開する入口として使えます。"
+          description="今日が復習日のノートです。学習の流れを止めないよう、ここから順に見返せます。"
           action={
             <Link
               href={buildNotesHref({ review: "due_soon" })}
-              className="text-sm text-[var(--accent)]"
+              className="text-sm font-medium text-[var(--accent)] transition-colors hover:text-white"
             >
-              復習一覧へ
+              復習一覧へ &rarr;
             </Link>
           }
         />
@@ -95,28 +114,38 @@ export default async function HomePage() {
             ))}
           </div>
         ) : (
-          <div className="quiet-panel px-6 py-8 sm:px-8">
-            <p className="text-sm leading-7 text-[var(--muted)]">
-              今日が復習日のノートはありません。次に見るなら、期限が近い復習か最近更新したノートから
-              始めるのがおすすめです。
+          <div className="quiet-panel flex flex-col items-center px-6 py-10 text-center sm:px-8">
+            <div className="mb-4 rounded-full bg-[var(--surface-muted)] p-3">
+              <svg className="h-6 w-6 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-base font-medium text-[var(--foreground)]">
+              今日の復習予定はありません
+            </p>
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-[var(--muted)]">
+              次に見返したいノートに復習日を設定しておくと、ここに表示されます。
             </p>
           </div>
         )}
       </section>
 
-      <section className="page-section space-y-5">
+      <section className="page-section space-y-6">
         <SectionIntro
           title="最近更新したノート"
-          description="直近で手を入れたノートです。途中で止めた考えも、続きから読み返せます。"
+          description="直近で手を入れたノートです。復習の流れを保ちながら、最近の理解も追いかけられます。"
           action={
-            <Link href={buildNotesHref()} className="text-sm text-[var(--accent)]">
-              すべて見る
+            <Link
+              href={buildNotesHref()}
+              className="text-sm font-medium text-[var(--accent)] transition-colors hover:text-white"
+            >
+              すべて見る &rarr;
             </Link>
           }
         />
 
         {recentNotes.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 lg:grid-cols-1 lg:gap-4">
             {recentNotes.map((note) => (
               <NoteCard key={note.id} note={note} />
             ))}
@@ -124,7 +153,7 @@ export default async function HomePage() {
         ) : (
           <EmptyState
             title="まだノートがありません"
-            description="最初の 1 件を書くと、ここに最近更新したノートが並びます。"
+            description="最初の1件を書いて、理解を整理する流れを作ってみてください。"
             primaryHref="/notes/new"
             primaryLabel="最初のノートを書く"
             secondaryHref={buildNotesHref()}
@@ -133,25 +162,5 @@ export default async function HomePage() {
         )}
       </section>
     </main>
-  );
-}
-
-type FocusCardProps = {
-  href: string;
-  label: string;
-  value: string;
-  description: string;
-};
-
-function FocusCard({ href, label, value, description }: FocusCardProps) {
-  return (
-    <Link
-      href={href}
-      className="quiet-panel px-5 py-5 transition hover:bg-[var(--surface-muted)] sm:px-6"
-    >
-      <div className="text-sm text-[var(--muted)]">{label}</div>
-      <div className="mt-2 text-3xl font-semibold tracking-[-0.03em]">{value}</div>
-      <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{description}</p>
-    </Link>
   );
 }

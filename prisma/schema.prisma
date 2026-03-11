@@ -29,30 +29,8 @@ model Note {
   lastReviewedAt DateTime?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  revisions      NoteRevision[]
 
   @@index([updatedAt(sort: Desc)])
   @@index([status, updatedAt(sort: Desc)])
   @@index([needsReview, reviewDueAt])
-}
-
-model NoteRevision {
-  id             String     @id @default(cuid())
-  noteId         String
-  title          String
-  summary        String     @default("")
-  explanation    String     @default("")
-  stuckPoints    String     @default("")
-  nextActions    String     @default("")
-  body           String     @default("")
-  tags           String[]   @default([])
-  status         NoteStatus
-  needsReview    Boolean    @default(false)
-  reviewDueAt    DateTime?
-  reviewCount    Int        @default(0)
-  lastReviewedAt DateTime?
-  createdAt      DateTime   @default(now())
-  note           Note       @relation(fields: [noteId], references: [id], onDelete: Cascade)
-
-  @@index([noteId, createdAt(sort: Desc)])
 }

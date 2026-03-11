@@ -1,7 +1,8 @@
 import { PageIntro } from "@/components/layout/page-intro";
 import { NoteForm } from "@/components/note/note-form";
-import { formatDateInput } from "@/lib/format";
+import { toNoteFormValues } from "@/lib/note-form-values";
 import { getNoteForEdit } from "@/lib/notes";
+import { noteStatusMeta } from "@/lib/note-status";
 
 export const dynamic = "force-dynamic";
 
@@ -24,33 +25,25 @@ export default async function EditNotePage({ params }: EditNotePageProps) {
       <PageIntro
         eyebrow="ノートを編集"
         title={note.title}
-        description="説明の言い回し、つまずき、次にやることを少しずつ整えていくための編集画面です。編集中の内容は自動保存されます。"
-      >
-        <div className="flex flex-wrap gap-2 text-sm text-[var(--muted)]">
-          <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1.5">
-            タグ {note.tags.length > 0 ? note.tags.join(", ") : "なし"}
-          </span>
-          <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1.5">
-            復習 {note.needsReview ? "あり" : "なし"}
-          </span>
-        </div>
-      </PageIntro>
+        description="内容を見直しながら、要点や説明を更新します。編集中の内容は自動保存されるので、書きながら少しずつ整えられます。"
+      />
+
+      <div className="page-section flex flex-wrap gap-2 text-sm text-[var(--muted)]">
+        <span className="rounded-md bg-[var(--surface-muted)] px-2.5 py-1">
+          ステータス {noteStatusMeta[note.status].label}
+        </span>
+        <span className="rounded-md bg-[var(--surface-muted)] px-2.5 py-1">
+          タグ {note.tags.length > 0 ? note.tags.join(", ") : "なし"}
+        </span>
+        <span className="rounded-md bg-[var(--surface-muted)] px-2.5 py-1">
+          復習 {note.needsReview ? "あり" : "なし"}
+        </span>
+      </div>
 
       <NoteForm
         mode="edit"
         noteId={note.id}
-        initialValues={{
-          title: note.title,
-          summary: note.summary,
-          explanation: note.explanation,
-          stuckPoints: note.stuckPoints,
-          nextActions: note.nextActions,
-          body: note.body,
-          tagsText: note.tags.join(", "),
-          status: note.status,
-          needsReview: note.needsReview,
-          reviewDueAt: formatDateInput(note.reviewDueAt),
-        }}
+        initialValues={toNoteFormValues(note)}
       />
     </main>
   );

@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { PageIntro } from "@/components/layout/page-intro";
-import { SectionIntro } from "@/components/layout/section-intro";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { EmptyState } from "@/components/empty-state";
+import { PageIntro } from "@/components/layout/page-intro";
+import { SectionIntro } from "@/components/layout/section-intro";
 import { ActiveFilters } from "@/components/note/active-filters";
 import { FilterForm } from "@/components/note/filter-form";
 import { NoteCard } from "@/components/note/note-card";
 import { buildNotesHref } from "@/lib/note-links";
 import { listNotes } from "@/lib/notes";
+import { pickSearchParamValues } from "@/lib/search-params";
 import { noteListQuerySchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -18,69 +19,76 @@ type NotesPageProps = {
 
 export default async function NotesPage({ searchParams }: NotesPageProps) {
   const rawSearchParams = await searchParams;
-  const filters = noteListQuerySchema.parse({
-    q: getSingleValue(rawSearchParams.q),
-    status: getSingleValue(rawSearchParams.status),
-    tag: getSingleValue(rawSearchParams.tag),
-    sort: getSingleValue(rawSearchParams.sort),
-    review: getSingleValue(rawSearchParams.review),
-  });
+  const filters = noteListQuerySchema.parse(
+    pickSearchParamValues(rawSearchParams, [
+      "q",
+      "status",
+      "tag",
+      "sort",
+      "review",
+    ] as const),
+  );
 
   const { notes, total, availableTags, stats, reviewQueue, overdueNotes } =
     await listNotes(filters);
+
   const hasFilters = Boolean(
-    filters.q || filters.tag || filters.status !== "ALL" || filters.review !== "all",
+    filters.q ||
+      filters.tag ||
+      filters.status !== "ALL" ||
+      filters.review !== "all",
   );
 
   return (
-    <main className="space-y-10 pb-12">
+    <main className="space-y-12 pb-12">
       <PageIntro
         eyebrow="ノート一覧"
-        title="学習ノートを、理解の流れごとに整理する"
-        description="キーワード、ステータス、タグ、復習条件で絞り込みながら、いま見直すべきノートを探せます。検索条件は URL に残るので、そのまま再訪や共有にも使えます。"
+        title="学習ノートを見つけて、読み返して、次の理解につなげる"
+        description="キーワード、ステータス、タグ、復習条件で絞り込みながら、今読むべきノートを静かに探せる一覧です。"
         actions={
           <>
             <Link
               href={buildNotesHref({ review: "needs_review" })}
-              className="action-secondary px-5 py-3"
+              className="action-secondary px-6 py-3"
             >
-              復習するノートへ
+              復習するノートを見る
             </Link>
-            <Link href="/notes/new" className="action-primary px-5 py-3">
-              新しいノート
+            <Link href="/notes/new" className="action-primary px-6 py-3">
+              新しいノートを書く
             </Link>
           </>
         }
       />
 
-      <DashboardStats stats={stats} reviewQueue={reviewQueue} overdueNotes={overdueNotes} />
-      <FilterForm filters={filters} availableTags={availableTags} />
-      <ActiveFilters filters={filters} />
+      <div className="space-y-4">
+        <FilterForm filters={filters} availableTags={availableTags} />
+        <ActiveFilters filters={filters} />
+      </div>
 
-      <section className="page-section space-y-5">
+      <section className="page-section space-y-6">
         <SectionIntro
-          title={hasFilters ? "絞り込み結果" : "すべてのノート"}
+          title={hasFilters ? "検索結果" : "すべてのノート"}
           description={`${total} 件のノートがあります。`}
           action={
-            <div className="flex flex-wrap gap-3 text-sm">
+            <div className="flex flex-wrap gap-4 text-sm font-medium">
               <Link
                 href={buildNotesHref({ review: "needs_review" })}
-                className="text-[var(--accent)]"
+                className="text-[var(--accent)] transition-colors hover:text-white"
               >
-                復習対象を見る
+                要復習を見る &rarr;
               </Link>
               <Link
                 href={buildNotesHref({ review: "overdue" })}
-                className="text-[var(--accent)]"
+                className="text-rose-400 transition-colors hover:text-rose-300"
               >
-                期限切れを見る
+                期限切れを見る &rarr;
               </Link>
             </div>
           }
         />
 
         {notes.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {notes.map((note) => (
               <NoteCard key={note.id} note={note} />
             ))}
@@ -90,39 +98,37 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
             title="条件に合うノートが見つかりませんでした"
             description="キーワードやタグを少し広げるか、復習条件を外して探してみてください。"
             primaryHref={buildNotesHref()}
-            primaryLabel="絞り込みをリセット"
+            primaryLabel="条件をリセット"
             secondaryHref="/notes/new"
-            secondaryLabel="新しく作成する"
+            secondaryLabel="新しいノートを書く"
             tips={[
-              "タグだけでなく、タイトルや要点の言い回しも変えてみる",
-              "復習条件は「期限切れ」より「復習対象のみ」の方が広く探せる",
-              "新しく作るなら、まずは一言で言える要点から書き始める",
+              "キーワードだけでなく、タグでも探せます。",
+              "復習条件は「要復習」「近日中に復習」「期限切れ」で切り替えられます。",
+              "まだノートがないテーマは、新規作成から追加できます。",
             ]}
           />
         ) : (
           <EmptyState
             title="まだノートがありません"
-            description="最初の 1 件を書くと、ここに理解の流れごとのノートが並びます。"
+            description="最初の1件を書いて、理解を整理する流れを作ってみてください。"
             primaryHref="/notes/new"
             primaryLabel="最初のノートを書く"
             secondaryHref="/"
             secondaryLabel="ホームへ戻る"
             tips={[
-              "タイトルは、あとから一覧で見返したときに分かる言葉にする",
-              "要点には一言で説明できる内容を先に置く",
-              "説明には自分の言葉で理解の流れを書く",
+              "タイトルは、あとから一目で内容を思い出せる言い方にします。",
+              "要点には一言で説明できる内容を書くと見返しやすくなります。",
+              "本文には自分の言葉で説明したことや補足メモを書いておくと役立ちます。",
             ]}
           />
         )}
       </section>
+
+      <DashboardStats
+        stats={stats}
+        reviewQueue={reviewQueue}
+        overdueNotes={overdueNotes}
+      />
     </main>
   );
-}
-
-function getSingleValue(value: string | string[] | undefined) {
-  if (Array.isArray(value)) {
-    return value[0];
-  }
-
-  return value;
 }

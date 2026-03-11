@@ -36,7 +36,7 @@ export async function POST(_request: Request, context: RouteContext) {
     }
 
     return NextResponse.json(
-      { error: "復習完了を記録できませんでした。" },
+      { error: "復習の完了に失敗しました。" },
       { status: 500 },
     );
   }

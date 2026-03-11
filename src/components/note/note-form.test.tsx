@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NoteStatus } from "@prisma/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { emptyNoteFormValues } from "@/lib/note-form-values";
 import { NoteForm } from "./note-form";
 
 const push = vi.fn();
@@ -30,24 +31,14 @@ describe("NoteForm", () => {
       <NoteForm
         mode="create"
         initialValues={{
-          title: "",
-          summary: "",
-          explanation: "",
-          stuckPoints: "",
-          nextActions: "",
-          body: "",
-          tagsText: "",
-          status: NoteStatus.DRAFT,
+          ...emptyNoteFormValues,
           needsReview: false,
-          reviewDueAt: "",
         }}
       />,
     );
 
     expect(screen.getByText("プレビュー")).toBeInTheDocument();
-    expect(
-      screen.getByText("まだ本文は入力されていません。"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("まだ本文は入力されていません。")).toBeInTheDocument();
 
     fireEvent.change(screen.getByPlaceholderText(/## 要点/), {
       target: {
@@ -65,16 +56,8 @@ describe("NoteForm", () => {
       <NoteForm
         mode="create"
         initialValues={{
-          title: "",
-          summary: "",
-          explanation: "",
-          stuckPoints: "",
-          nextActions: "",
-          body: "",
-          tagsText: "",
-          status: NoteStatus.DRAFT,
+          ...emptyNoteFormValues,
           needsReview: false,
-          reviewDueAt: "",
         }}
       />,
     );

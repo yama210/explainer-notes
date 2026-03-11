@@ -11,7 +11,7 @@ async function fillRequiredNoteFields(page: Page, title: string) {
   await page.locator("#title").fill(title);
   await page
     .locator("#summary")
-    .fill("E2E で作成した学習ノートです。理解の要点を短くまとめています。");
+    .fill("E2E で作成した学習ノートです。内容の要点を短くまとめています。");
   await page
     .locator("#explanation")
     .fill("JWT の基本構造を自分の言葉で説明できるかを確認するためのノートです。");
@@ -46,17 +46,17 @@ test.describe("major note flows", () => {
     await expect(page.locator("#reviewDueAt")).toHaveValue(reviewDate);
     await page.goto(page.url().replace(/\/edit$/, ""));
 
-    await page.getByRole("button", { name: "今日の復習を完了" }).click();
+    await page.getByRole("button", { name: "復習を完了する" }).click();
     await expect(
-      page.getByText(/復習を記録しました。今回は/),
+      page.getByText(/復習を完了しました。今回は/),
     ).toBeVisible();
-    await expect(page.getByText("確認中").first()).toBeVisible();
+    await expect(page.getByText("説明できる").first()).toBeVisible();
 
     await deleteFromDetail(page);
     await expect(page).toHaveURL(/\/notes$/);
   });
 
-  test("can autosave, display history, preserve filters and delete a note", async ({
+  test("can autosave, preserve filters and delete a note", async ({
     page,
   }) => {
     const uniqueTitle = `E2E note ${Date.now()}`;
@@ -74,7 +74,7 @@ test.describe("major note flows", () => {
     await page.getByRole("button", { name: "保存して詳細へ戻る" }).click();
 
     await expect(page.getByRole("heading", { name: uniqueTitle })).toBeVisible();
-    await expect(page.locator('a[href*="?revision="]').first()).toBeVisible();
+    await expect(page).toHaveURL(/\/notes\/[^/]+$/);
 
     const detailPath = new URL(page.url()).pathname;
     await page.getByRole("link", { name: "タグ重視" }).click();
@@ -86,7 +86,7 @@ test.describe("major note flows", () => {
     await page.locator("#q").fill("Prisma");
     await page.locator("#status").selectOption("DRAFT");
     await page.locator("#review").selectOption("overdue");
-    await page.getByRole("button", { name: "条件を適用" }).click();
+    await page.getByRole("button", { name: "検索する" }).click();
     await expect(page).toHaveURL(/q=Prisma/);
     await expect(page).toHaveURL(/status=DRAFT/);
     await expect(page).toHaveURL(/review=overdue/);
@@ -97,7 +97,7 @@ test.describe("major note flows", () => {
 
     await page.goto("/notes");
     await page.locator("#q").fill(uniqueTitle);
-    await page.getByRole("button", { name: "条件を適用" }).click();
+    await page.getByRole("button", { name: "検索する" }).click();
     await page.getByRole("link", { name: uniqueTitle }).click();
     await deleteFromDetail(page);
 

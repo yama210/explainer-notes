@@ -13,17 +13,22 @@ export function ReviewTransitionGuide({
   const guide = getReviewTransitionGuide(status, reviewCount);
 
   return (
-    <div className="quiet-panel px-5 py-5 sm:px-6">
-      <h2 className="text-sm font-medium text-[var(--muted)]">復習ルール</h2>
-      <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-        今のステータスは「{guide.currentLabel}」です。次の復習完了では
-        「{guide.nextLabel}」へ進む想定です。
+    <div className="space-y-3 rounded-lg border border-[var(--line-light)] bg-[var(--surface)] p-5">
+      <h3 className="text-sm font-semibold text-[var(--foreground)]">
+        復習ルール
+      </h3>
+      <p className="text-sm text-[var(--muted)]">
+        現在のステータスは「
+        {guide.currentLabel}
+        」です。次の復習完了後は「
+        {guide.nextLabel}
+        」になります。復習回数は {reviewCount} 回です。
       </p>
-      <ul className="mt-4 space-y-2 text-sm leading-7 text-[var(--foreground)]">
+      <ol className="list-decimal space-y-1 pl-4 text-sm text-[var(--muted)]">
         {guide.steps.map((step) => (
           <li key={step}>{step}</li>
         ))}
-      </ul>
+      </ol>
     </div>
   );
 }

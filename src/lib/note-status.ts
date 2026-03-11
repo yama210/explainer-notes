@@ -2,26 +2,22 @@ import { NoteStatus } from "@prisma/client";
 
 export const noteStatusMeta: Record<
   NoteStatus,
-  { label: string; description: string; classes: string }
+  { label: string; classes: string }
 > = {
   DRAFT: {
     label: "下書き",
-    description: "まだ理解を整理している途中のノートです。",
     classes: "bg-stone-100 text-stone-700",
   },
   REVIEWING: {
     label: "確認中",
-    description: "説明できるかを確かめながら見直しているノートです。",
     classes: "bg-amber-100 text-amber-800",
   },
   EXPLAINABLE: {
     label: "説明できる",
-    description: "自分の言葉で説明できる状態まで整理できたノートです。",
     classes: "bg-[var(--accent-soft)] text-[var(--accent)]",
   },
   ARCHIVED: {
-    label: "アーカイブ",
-    description: "ひと区切りついた内容として保存しているノートです。",
+    label: "保管",
     classes: "bg-slate-100 text-slate-700",
   },
 };
@@ -60,7 +56,10 @@ export function getNextStatusAfterReview(
   return NoteStatus.REVIEWING;
 }
 
-export function getReviewTransitionGuide(currentStatus: NoteStatus, reviewCount: number) {
+export function getReviewTransitionGuide(
+  currentStatus: NoteStatus,
+  reviewCount: number,
+) {
   const nextReviewCount = reviewCount + 1;
   const nextStatus = getNextStatusAfterReview(currentStatus, nextReviewCount);
 
@@ -68,9 +67,9 @@ export function getReviewTransitionGuide(currentStatus: NoteStatus, reviewCount:
     currentLabel: noteStatusMeta[currentStatus].label,
     nextLabel: noteStatusMeta[nextStatus].label,
     steps: [
-      "1回目の復習完了: 確認中へ進める",
-      "2回目以降の復習完了: 説明できるへ進める",
-      "アーカイブ済みのノートはそのまま維持する",
+      "1回目の復習完了で「確認中」へ進みます。",
+      "2回目以降の復習完了で「説明できる」へ進みます。",
+      "「保管」は現在の状態を維持します。",
     ],
   };
 }

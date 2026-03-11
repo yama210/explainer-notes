@@ -5,21 +5,19 @@ import type { NoteInput } from "./validation";
 const { repositoryMock, notFoundMock } = vi.hoisted(() => ({
   repositoryMock: {
     countNotes: vi.fn(),
-    createNoteWithRevision: vi.fn(),
+    createNoteRecord: vi.fn(),
     findAllNoteTags: vi.fn(),
     findDashboardStatsNotes: vi.fn(),
-    findNoteByIdWithRevisions: vi.fn(),
+    findNoteById: vi.fn(),
     findNoteForEdit: vi.fn(),
     findNotesForList: vi.fn(),
     findNotesForStats: vi.fn(),
     findRecentNotes: vi.fn(),
     findRelatedNoteCandidates: vi.fn(),
-    findRevisionForNote: vi.fn(),
     findTodayReviewNotes: vi.fn(),
     removeNote: vi.fn(),
-    restoreRevisionWithSnapshot: vi.fn(),
-    updateNoteWithRevision: vi.fn(),
-    updateReviewStateWithRevision: vi.fn(),
+    updateNoteRecord: vi.fn(),
+    updateReviewState: vi.fn(),
   },
   notFoundMock: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
@@ -40,7 +38,6 @@ import {
   getNoteById,
   getNoteForEdit,
   listNotes,
-  restoreRevision,
   updateNote,
 } from "./notes";
 
@@ -117,8 +114,8 @@ describe("notes service", () => {
     ]);
   });
 
-  it("creates a note and stores a revision snapshot", async () => {
-    repositoryMock.createNoteWithRevision.mockResolvedValue({
+  it("creates a note through the repository", async () => {
+    repositoryMock.createNoteRecord.mockResolvedValue({
       id: "note-1",
       ...sampleInput,
       reviewCount: 0,
@@ -127,12 +124,12 @@ describe("notes service", () => {
 
     const result = await createNote(sampleInput);
 
-    expect(repositoryMock.createNoteWithRevision).toHaveBeenCalledWith(sampleInput);
+    expect(repositoryMock.createNoteRecord).toHaveBeenCalledWith(sampleInput);
     expect(result.id).toBe("note-1");
   });
 
-  it("updates a note and stores a revision snapshot", async () => {
-    repositoryMock.updateNoteWithRevision.mockResolvedValue({
+  it("updates a note through the repository", async () => {
+    repositoryMock.updateNoteRecord.mockResolvedValue({
       id: "note-1",
       ...sampleInput,
       title: "JWT updated",
@@ -142,7 +139,7 @@ describe("notes service", () => {
 
     const result = await updateNote("note-1", sampleInput);
 
-    expect(repositoryMock.updateNoteWithRevision).toHaveBeenCalledWith("note-1", sampleInput);
+    expect(repositoryMock.updateNoteRecord).toHaveBeenCalledWith("note-1", sampleInput);
     expect(result.title).toBe("JWT updated");
   });
 
@@ -170,7 +167,7 @@ describe("notes service", () => {
     repositoryMock.findTodayReviewNotes.mockResolvedValue([
       {
         id: "3",
-        title: "今日復習する JWT ノート",
+        title: "今日の復習用 JWT ノート",
         summary: "summary",
         explanation: "explanation",
         body: "body",
@@ -220,7 +217,7 @@ describe("notes service", () => {
   });
 
   it("returns note detail with related note reasons", async () => {
-    repositoryMock.findNoteByIdWithRevisions.mockResolvedValue({
+    repositoryMock.findNoteById.mockResolvedValue({
       id: "note-1",
       title: "JWT",
       summary: "auth token",
@@ -236,24 +233,6 @@ describe("notes service", () => {
       lastReviewedAt: null,
       createdAt: new Date("2026-03-01T09:00:00+09:00"),
       updatedAt: new Date("2026-03-07T09:00:00+09:00"),
-      revisions: [
-        {
-          id: "rev-1",
-          title: "JWT",
-          summary: "auth token",
-          explanation: "認証の流れを説明する",
-          stuckPoints: "stuck",
-          nextActions: "next",
-          body: "body",
-          tags: ["auth"],
-          status: NoteStatus.REVIEWING,
-          needsReview: true,
-          reviewDueAt: null,
-          reviewCount: 1,
-          lastReviewedAt: null,
-          createdAt: new Date("2026-03-07T09:00:00+09:00"),
-        },
-      ],
     });
     repositoryMock.findRelatedNoteCandidates.mockResolvedValue([
       {
@@ -273,7 +252,7 @@ describe("notes service", () => {
       },
     ]);
 
-    const result = await getNoteById("note-1", undefined, "tag_focused");
+    const result = await getNoteById("note-1", "tag_focused");
 
     expect(result.relatedPreset).toBe("tag_focused");
     expect(result.relatedMatches[0]?.reasons[0]).toContain("共通タグ");
@@ -301,7 +280,7 @@ describe("notes service", () => {
       createdAt: new Date("2026-03-01T09:00:00+09:00"),
       updatedAt: new Date("2026-03-07T09:00:00+09:00"),
     });
-    repositoryMock.updateReviewStateWithRevision.mockResolvedValue({
+    repositoryMock.updateReviewState.mockResolvedValue({
       id: "note-1",
       title: "JWT",
       summary: "summary",
@@ -321,7 +300,7 @@ describe("notes service", () => {
 
     const result = await completeReview("note-1");
 
-    expect(repositoryMock.updateReviewStateWithRevision).toHaveBeenCalledWith(
+    expect(repositoryMock.updateReviewState).toHaveBeenCalledWith(
       "note-1",
       expect.objectContaining({
         status: NoteStatus.EXPLAINABLE,
@@ -333,54 +312,8 @@ describe("notes service", () => {
     expect(result.note.status).toBe(NoteStatus.EXPLAINABLE);
   });
 
-  it("restores a revision and stores a new snapshot", async () => {
-    repositoryMock.findRevisionForNote.mockResolvedValue({
-      id: "rev-1",
-      title: "old",
-      summary: "summary",
-      explanation: "explanation",
-      stuckPoints: "stuck",
-      nextActions: "next",
-      body: "body",
-      tags: ["auth"],
-      status: NoteStatus.DRAFT,
-      needsReview: true,
-      reviewDueAt: null,
-      reviewCount: 0,
-      lastReviewedAt: null,
-      createdAt: new Date("2026-03-01T09:00:00+09:00"),
-    });
-    repositoryMock.restoreRevisionWithSnapshot.mockResolvedValue({
-      id: "note-1",
-      title: "old",
-      summary: "summary",
-      explanation: "explanation",
-      stuckPoints: "stuck",
-      nextActions: "next",
-      body: "body",
-      tags: ["auth"],
-      status: NoteStatus.DRAFT,
-      needsReview: true,
-      reviewDueAt: null,
-      reviewCount: 0,
-      lastReviewedAt: null,
-      createdAt: new Date("2026-03-01T09:00:00+09:00"),
-      updatedAt: new Date("2026-03-12T09:00:00+09:00"),
-    });
-
-    const result = await restoreRevision("note-1", "rev-1");
-
-    expect(repositoryMock.restoreRevisionWithSnapshot).toHaveBeenCalledWith(
-      "note-1",
-      expect.objectContaining({
-        id: "rev-1",
-      }),
-    );
-    expect(result.title).toBe("old");
-  });
-
   it("calls notFound when a note is missing", async () => {
-    repositoryMock.findNoteByIdWithRevisions.mockResolvedValue(null);
+    repositoryMock.findNoteById.mockResolvedValue(null);
 
     await expect(getNoteById("missing")).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();

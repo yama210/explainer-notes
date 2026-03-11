@@ -11,7 +11,7 @@ CREATE TYPE "NoteType" AS ENUM ('concept', 'error', 'phrase', 'procedure');
 CREATE TYPE "Subject" AS ENUM ('programming', 'english', 'other');
 
 -- DropTable
-DROP TABLE "NoteItem";
+DROP TABLE IF EXISTS "NoteItem";
 
 -- CreateTable
 CREATE TABLE "Note" (

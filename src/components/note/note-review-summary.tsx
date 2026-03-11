@@ -1,4 +1,4 @@
-import { formatDateTime, formatRelativeFromNow } from "@/lib/format";
+import { formatDate, formatRelativeFromNow } from "@/lib/format";
 
 type NoteReviewSummaryProps = {
   lastReviewedAt: Date | null;
@@ -12,22 +12,34 @@ export function NoteReviewSummary({
   needsReview,
 }: NoteReviewSummaryProps) {
   return (
-    <div className="quiet-panel px-5 py-5 sm:px-6">
-      <h2 className="text-sm font-medium text-[var(--muted)]">復習の進み方</h2>
-      <div className="mt-4 space-y-3 text-sm">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[var(--muted)]">最後に復習した日</span>
-          <span>{lastReviewedAt ? formatDateTime(lastReviewedAt) : "未記録"}</span>
+    <div className="space-y-3 rounded-lg border border-[var(--line-light)] bg-[var(--surface)] p-5">
+      <h3 className="text-sm font-semibold text-[var(--foreground)]">
+        復習の状況
+      </h3>
+      <dl className="space-y-2 text-sm">
+        <div className="flex justify-between gap-4">
+          <dt className="text-[var(--muted)]">前回の復習</dt>
+          <dd className="font-medium text-[var(--foreground)]">
+            {lastReviewedAt ? formatRelativeFromNow(lastReviewedAt) : "まだありません"}
+          </dd>
         </div>
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[var(--muted)]">次回復習まで</span>
-          <span>{reviewDueAt ? formatRelativeFromNow(reviewDueAt) : "未設定"}</span>
+        <div className="flex justify-between gap-4">
+          <dt className="text-[var(--muted)]">次回の復習日</dt>
+          <dd className="font-medium text-[var(--foreground)]">
+            {reviewDueAt ? formatDate(reviewDueAt) : "未設定"}
+          </dd>
         </div>
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[var(--muted)]">現在の状態</span>
-          <span>{needsReview ? "復習を続ける" : "いったん完了"}</span>
+        <div className="flex justify-between gap-4">
+          <dt className="text-[var(--muted)]">要復習</dt>
+          <dd
+            className={`font-medium ${
+              needsReview ? "text-[var(--danger)]" : "text-[var(--success)]"
+            }`}
+          >
+            {needsReview ? "はい" : "いいえ"}
+          </dd>
         </div>
-      </div>
+      </dl>
     </div>
   );
 }

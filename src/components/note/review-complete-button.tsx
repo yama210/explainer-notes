@@ -49,20 +49,20 @@ export function ReviewCompleteButton({ noteId }: ReviewCompleteButtonProps) {
       };
 
       if (!response.ok) {
-        throw new Error(result.error ?? "復習完了を記録できませんでした。");
+        throw new Error(result.error ?? "復習の完了に失敗しました。");
       }
 
       const nextReviewDate = result.reviewDueAt
         ? formatDate(result.reviewDueAt)
         : "未設定";
 
-      const nextMessage = `復習を記録しました。今回は ${result.intervalDays ?? 0} 日後に設定し、次回の復習日は ${nextReviewDate}、ステータスは「${result.statusLabel ?? "未設定"}」です。`;
+      const nextMessage = `復習を完了しました。今回は ${result.intervalDays ?? 0} 日後に設定しました。次回の復習日は ${nextReviewDate} です。ステータスは「${result.statusLabel ?? "未設定"}」になりました。`;
       setMessage(nextMessage);
       sessionStorage.setItem(REVIEW_MESSAGE_KEY, nextMessage);
       router.refresh();
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : "復習完了を記録できませんでした。",
+        cause instanceof Error ? cause.message : "復習の完了に失敗しました。",
       );
       setIsSubmitting(false);
       return;
@@ -77,12 +77,12 @@ export function ReviewCompleteButton({ noteId }: ReviewCompleteButtonProps) {
         type="button"
         onClick={handleComplete}
         disabled={isSubmitting}
-        className="action-primary px-5 py-3 disabled:cursor-not-allowed disabled:opacity-60"
+        className="action-primary px-5 py-2.5 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isSubmitting ? "記録中..." : "今日の復習を完了"}
+        {isSubmitting ? "保存中..." : "復習を完了する"}
       </button>
       {message ? (
-        <p className="max-w-md rounded-2xl bg-[var(--accent-soft)] px-4 py-3 text-sm text-[var(--accent)]">
+        <p className="max-w-md rounded-md bg-[var(--success-soft)] px-4 py-3 text-sm text-[var(--success)]">
           {message}
         </p>
       ) : null}

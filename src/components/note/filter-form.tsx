@@ -47,14 +47,14 @@ export function FilterForm({ filters, availableTags }: FilterFormProps) {
       }}
     >
       <div className="quiet-panel px-5 py-5 sm:px-6">
-        <div className="grid gap-4 lg:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))]">
+        <div className="grid items-end gap-4 lg:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))]">
           <Field label="キーワード">
             <input
               id="q"
               name="q"
               value={values.q}
               onChange={(event) => updateField("q", event.target.value)}
-              placeholder="タイトル、要点、タグで検索"
+              placeholder="タイトル、本文、タグで検索"
               className="field-control"
             />
           </Field>
@@ -90,7 +90,7 @@ export function FilterForm({ filters, availableTags }: FilterFormProps) {
           />
 
           <SelectField
-            label="復習条件"
+            label="復習"
             name="review"
             value={values.review}
             onChange={(value) =>
@@ -98,7 +98,7 @@ export function FilterForm({ filters, availableTags }: FilterFormProps) {
             }
             options={[
               { value: "all", label: "すべて" },
-              { value: "needs_review", label: "復習対象のみ" },
+              { value: "needs_review", label: "要復習" },
               { value: "due_soon", label: "近日中に復習" },
               { value: "overdue", label: "期限切れ" },
             ]}
@@ -118,18 +118,18 @@ export function FilterForm({ filters, availableTags }: FilterFormProps) {
           />
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-wrap gap-3 border-t border-[var(--line-light)] pt-4">
           <button
             type="submit"
             disabled={isPending}
-            className="action-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+            className="action-primary px-5 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
           >
-            条件を適用
+            検索する
           </button>
           <button
             type="button"
             disabled={isPending}
-            className="action-secondary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+            className="action-secondary px-5 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             onClick={() => {
               const nextDefaults: NoteListQuery = { ...defaultNoteListQuery };
               setValues(nextDefaults);
@@ -151,8 +151,8 @@ type FieldProps = {
 
 function Field({ label, children }: FieldProps) {
   return (
-    <label className="space-y-2">
-      <div className="text-sm text-[var(--muted)]">{label}</div>
+    <label className="block space-y-1.5">
+      <div className="text-xs font-medium text-[var(--muted)]">{label}</div>
       {children}
     </label>
   );
@@ -180,7 +180,7 @@ function SelectField({
         name={name}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="field-control"
+        className="field-control cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.65rem_0.65rem] bg-[right_0.75rem_center] bg-no-repeat pr-8"
       >
         {options.map((option) => (
           <option key={`${name}-${option.value}`} value={option.value}>

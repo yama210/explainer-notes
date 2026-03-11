@@ -36,7 +36,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: ["sh", "./scripts/docker-dev-entrypoint.sh"]
+    command:
+      [
+        "sh",
+        "-c",
+        "tr -d '\\r' < ./scripts/docker-dev-entrypoint.sh > /tmp/docker-dev-entrypoint.sh && chmod +x /tmp/docker-dev-entrypoint.sh && /tmp/docker-dev-entrypoint.sh",
+      ]
 
 volumes:
   db_data:

@@ -36,23 +36,13 @@ export function buildNotesHref(overrides: Partial<NoteListQuery> = {}) {
 export function buildNoteDetailHref(
   noteId: string,
   options: {
-    revisionId?: string;
     relatedPreset?: RelatedNotePreset;
-    restoredFrom?: string;
   } = {},
 ) {
   const params = new URLSearchParams();
 
-  if (options.revisionId) {
-    params.set("revision", options.revisionId);
-  }
-
   if (options.relatedPreset && options.relatedPreset !== "balanced") {
     params.set("related", options.relatedPreset);
-  }
-
-  if (options.restoredFrom) {
-    params.set("restoredFrom", options.restoredFrom);
   }
 
   const search = params.toString();

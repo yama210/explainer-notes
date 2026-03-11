@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { NoteStatus } from "@prisma/client";
-import { formatDate } from "@/lib/format";
+import type { ReactNode } from "react";
+import { SectionIntro } from "@/components/layout/section-intro";
 import { buildNotesHref } from "@/lib/note-links";
 import { noteStatusMeta } from "@/lib/note-status";
-import { SectionIntro } from "@/components/layout/section-intro";
+import { ReviewListPanel } from "./review-list-panel";
+import { StatLinkCard } from "./stat-link-card";
 
 type ReviewListItem = {
   id: string;
@@ -31,169 +33,118 @@ export function DashboardStats({
   overdueNotes,
 }: DashboardStatsProps) {
   return (
-    <section className="page-section space-y-5">
+    <section className="page-section space-y-6">
       <SectionIntro
         title="学習の状況"
-        description="いまの理解段階、復習の滞留、よく触っているテーマをひと目で確認できます。"
+        description="ノートの進み具合と、次に見返したい復習候補をまとめて確認できます。"
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="総ノート数" value={stats.total} href={buildNotesHref()} />
-        <StatCard
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatLinkCard label="総ノート数" value={stats.total} href={buildNotesHref()} />
+        <StatLinkCard
           label="説明できる"
           value={stats.explainable}
           href={buildNotesHref({ status: "EXPLAINABLE" })}
         />
-        <StatCard
-          label="復習対象"
+        <StatLinkCard
+          label="要復習"
           value={stats.needsReview}
           href={buildNotesHref({ review: "needs_review" })}
         />
-        <StatCard
+        <StatLinkCard
           label="期限切れ"
           value={stats.overdue}
           href={buildNotesHref({ review: "overdue" })}
         />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-        <div className="quiet-panel px-5 py-5 sm:px-6">
-          <div className="space-y-5">
-            <div className="space-y-3">
-              <h2 className="text-sm font-medium text-[var(--muted)]">
-                ステータス別の内訳
-              </h2>
-              <div className="flex flex-wrap gap-2.5">
-                {stats.statusCounts.map(({ status, count }) => (
-                  <Link
-                    key={status}
-                    href={buildNotesHref({ status })}
-                    className="rounded-full bg-[var(--surface-muted)] px-3 py-2 text-sm transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]"
-                  >
-                    <span>{noteStatusMeta[status].label}</span>
-                    <span className="ml-2 text-[var(--muted)]">{count}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
+      <div className="rounded-lg border border-[var(--line-light)] bg-[var(--surface)] p-5 sm:p-6">
+        <div className="space-y-6">
+          <StatsGroup title="ステータス別の内訳">
+            {stats.statusCounts.map(({ status, count }) => (
+              <Link
+                key={status}
+                href={buildNotesHref({ status })}
+                className="flex items-center rounded-md bg-[var(--surface-muted)] px-3 py-1.5 text-sm transition-colors hover:text-[var(--accent)]"
+              >
+                <span>{noteStatusMeta[status].label}</span>
+                <span className="ml-1.5 text-xs text-[var(--muted)]">{count}</span>
+              </Link>
+            ))}
+          </StatsGroup>
 
-            <div className="space-y-3">
-              <h2 className="text-sm font-medium text-[var(--muted)]">今週よく触ったテーマ</h2>
-              {stats.weeklyThemes.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {stats.weeklyThemes.map(({ tag, count }) => (
-                    <Link
-                      key={tag}
-                      href={buildNotesHref({ tag })}
-                      className="rounded-full bg-[var(--surface-muted)] px-3 py-2 text-sm"
-                    >
-                      #{tag}
-                      <span className="ml-1 text-[var(--muted)]">{count}</span>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm leading-7 text-[var(--muted)]">
-                  今週更新したテーマはまだありません。
-                </p>
-              )}
-            </div>
+          <StatsGroup title="今週よく触ったテーマ">
+            {stats.weeklyThemes.length > 0 ? (
+              stats.weeklyThemes.map(({ tag, count }) => (
+                <Link
+                  key={tag}
+                  href={buildNotesHref({ tag })}
+                  className="flex items-center rounded-md bg-[var(--surface-muted)] px-3 py-1.5 text-sm transition-colors hover:text-[var(--accent)]"
+                >
+                  #{tag}
+                  <span className="ml-1.5 text-xs text-[var(--muted)]">{count}</span>
+                </Link>
+              ))
+            ) : (
+              <p className="text-sm text-[var(--muted)]">
+                今週更新したテーマはまだありません。
+              </p>
+            )}
+          </StatsGroup>
 
-            <div className="space-y-3">
-              <h2 className="text-sm font-medium text-[var(--muted)]">よく使うタグ</h2>
-              {stats.topTags.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {stats.topTags.map(({ tag, count }) => (
-                    <Link
-                      key={tag}
-                      href={buildNotesHref({ tag })}
-                      className="rounded-full bg-[var(--surface-muted)] px-3 py-2 text-sm text-[var(--foreground)]"
-                    >
-                      #{tag}
-                      <span className="ml-1 text-[var(--muted)]">{count}</span>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm leading-7 text-[var(--muted)]">
-                  まだタグ付きのノートはありません。
-                </p>
-              )}
-            </div>
-          </div>
+          <StatsGroup title="よく使うタグ">
+            {stats.topTags.length > 0 ? (
+              stats.topTags.map(({ tag, count }) => (
+                <Link
+                  key={tag}
+                  href={buildNotesHref({ tag })}
+                  className="flex items-center rounded-md bg-[var(--surface-muted)] px-3 py-1.5 text-sm transition-colors hover:text-[var(--accent)]"
+                >
+                  #{tag}
+                  <span className="ml-1.5 text-xs text-[var(--muted)]">{count}</span>
+                </Link>
+              ))
+            ) : (
+              <p className="text-sm text-[var(--muted)]">
+                まだタグ付きのノートはありません。
+              </p>
+            )}
+          </StatsGroup>
         </div>
+      </div>
 
-        <div className="space-y-5">
-          <ReviewListPanel
-            title="近い復習予定"
-            emptyLabel="復習予定のノートはありません。"
-            href={buildNotesHref({ review: "due_soon" })}
-            items={reviewQueue}
-          />
-          <ReviewListPanel
-            title="期限切れの復習"
-            emptyLabel="期限切れの復習はありません。"
-            href={buildNotesHref({ review: "overdue" })}
-            items={overdueNotes}
-          />
-        </div>
+      <div className="grid gap-5 md:grid-cols-2">
+        <ReviewListPanel
+          title="近日中に復習"
+          emptyLabel="近日中に復習するノートはありません。"
+          href={buildNotesHref({ review: "due_soon" })}
+          items={reviewQueue}
+        />
+        <ReviewListPanel
+          title="期限切れの復習"
+          emptyLabel="期限切れの復習はありません。"
+          href={buildNotesHref({ review: "overdue" })}
+          items={overdueNotes}
+          isAlert
+        />
       </div>
     </section>
   );
 }
 
-type StatCardProps = {
-  label: string;
-  value: number;
-  href: string;
-};
-
-function StatCard({ label, value, href }: StatCardProps) {
-  return (
-    <Link
-      href={href}
-      className="quiet-panel px-5 py-5 transition hover:bg-[var(--surface-muted)] sm:px-6"
-    >
-      <div className="text-sm text-[var(--muted)]">{label}</div>
-      <div className="mt-2 text-3xl font-semibold tracking-[-0.03em]">{value}</div>
-    </Link>
-  );
-}
-
-type ReviewListPanelProps = {
+function StatsGroup({
+  title,
+  children,
+}: {
   title: string;
-  href: string;
-  items: ReviewListItem[];
-  emptyLabel: string;
-};
-
-function ReviewListPanel({ title, href, items, emptyLabel }: ReviewListPanelProps) {
+  children: ReactNode;
+}) {
   return (
-    <div className="quiet-panel px-5 py-5 sm:px-6">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium text-[var(--muted)]">{title}</h2>
-        <Link href={href} className="text-sm text-[var(--accent)]">
-          一覧へ
-        </Link>
-      </div>
-      {items.length > 0 ? (
-        <div className="mt-4 space-y-3">
-          {items.map((item) => (
-            <Link
-              key={item.id}
-              href={`/notes/${item.id}`}
-              className="block rounded-2xl bg-[var(--surface-muted)] px-4 py-3 transition hover:bg-[var(--accent-soft)]"
-            >
-              <div className="font-medium">{item.title}</div>
-              <div className="mt-1 text-sm text-[var(--muted)]">
-                復習日 {formatDate(item.reviewDueAt)}
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <p className="mt-4 text-sm leading-7 text-[var(--muted)]">{emptyLabel}</p>
-      )}
+    <div className="space-y-3">
+      <h3 className="border-b border-[var(--line-light)] pb-2 text-sm font-semibold text-[var(--foreground)]">
+        {title}
+      </h3>
+      <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   );
 }
