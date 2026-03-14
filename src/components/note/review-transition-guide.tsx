@@ -1,8 +1,7 @@
-import { NoteStatus } from "@prisma/client";
-import { getReviewTransitionGuide } from "@/lib/note-status";
+import { getReviewTransitionGuide, type NoteStatusValue } from "@/lib/note-status";
 
 type ReviewTransitionGuideProps = {
-  status: NoteStatus;
+  status: NoteStatusValue;
   reviewCount: number;
 };
 

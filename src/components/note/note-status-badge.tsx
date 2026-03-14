@@ -1,9 +1,8 @@
-import { NoteStatus } from "@prisma/client";
-import { noteStatusMeta } from "@/lib/note-status";
+import { noteStatusMeta, type NoteStatusValue } from "@/lib/note-status";
 import { cn } from "@/lib/utils";
 
 type NoteStatusBadgeProps = {
-  status: NoteStatus;
+  status: NoteStatusValue;
 };
 
 export function NoteStatusBadge({ status }: NoteStatusBadgeProps) {

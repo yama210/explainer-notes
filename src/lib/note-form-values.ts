@@ -1,5 +1,5 @@
-import { NoteStatus } from "@prisma/client";
 import { formatDateInput } from "./format";
+import type { NoteStatusValue } from "./note-status";
 
 export type NoteFormValues = {
   title: string;
@@ -9,7 +9,7 @@ export type NoteFormValues = {
   nextActions: string;
   body: string;
   tagsText: string;
-  status: NoteStatus;
+  status: NoteStatusValue;
   needsReview: boolean;
   reviewDueAt: string;
 };
@@ -22,7 +22,7 @@ type EditableNoteSource = {
   nextActions: string;
   body: string;
   tags: string[];
-  status: NoteStatus;
+  status: NoteStatusValue;
   needsReview: boolean;
   reviewDueAt: Date | null;
 };
@@ -35,7 +35,7 @@ export const emptyNoteFormValues: NoteFormValues = {
   nextActions: "",
   body: "",
   tagsText: "",
-  status: NoteStatus.DRAFT,
+  status: "DRAFT",
   needsReview: true,
   reviewDueAt: "",
 };

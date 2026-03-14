@@ -1,7 +1,16 @@
-import { NoteStatus } from "@prisma/client";
+import type { NoteStatus } from "@prisma/client";
+
+export type NoteStatusValue = NoteStatus;
+
+export const noteStatusValues = [
+  "DRAFT",
+  "REVIEWING",
+  "EXPLAINABLE",
+  "ARCHIVED",
+] as const satisfies readonly NoteStatusValue[];
 
 export const noteStatusMeta: Record<
-  NoteStatus,
+  NoteStatusValue,
   { label: string; classes: string }
 > = {
   DRAFT: {
@@ -24,7 +33,7 @@ export const noteStatusMeta: Record<
 
 export const noteStatusOptions = Object.entries(noteStatusMeta).map(
   ([value, meta]) => ({
-    value: value as NoteStatus,
+    value: value as NoteStatusValue,
     ...meta,
   }),
 );
@@ -38,26 +47,26 @@ export const sortOptions = [
 export type NoteSort = (typeof sortOptions)[number]["value"];
 
 export function getNextStatusAfterReview(
-  currentStatus: NoteStatus,
+  currentStatus: NoteStatusValue,
   nextReviewCount: number,
 ) {
-  if (currentStatus === NoteStatus.ARCHIVED) {
-    return NoteStatus.ARCHIVED;
+  if (currentStatus === "ARCHIVED") {
+    return "ARCHIVED";
   }
 
-  if (currentStatus === NoteStatus.EXPLAINABLE) {
-    return NoteStatus.EXPLAINABLE;
+  if (currentStatus === "EXPLAINABLE") {
+    return "EXPLAINABLE";
   }
 
   if (nextReviewCount >= 2) {
-    return NoteStatus.EXPLAINABLE;
+    return "EXPLAINABLE";
   }
 
-  return NoteStatus.REVIEWING;
+  return "REVIEWING";
 }
 
 export function getReviewTransitionGuide(
-  currentStatus: NoteStatus,
+  currentStatus: NoteStatusValue,
   reviewCount: number,
 ) {
   const nextReviewCount = reviewCount + 1;

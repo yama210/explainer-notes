@@ -1,9 +1,8 @@
-import { NoteStatus } from "@prisma/client";
 import { z } from "zod";
 import { createReviewDate } from "./review-date";
-import { sortOptions } from "./note-status";
+import { noteStatusValues, sortOptions } from "./note-status";
 
-export const noteStatusSchema = z.nativeEnum(NoteStatus);
+export const noteStatusSchema = z.enum(noteStatusValues);
 
 export const defaultNoteListQuery = {
   q: "",

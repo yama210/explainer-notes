@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { NoteStatus } from "@prisma/client";
 import type { ReactNode } from "react";
 import { SectionIntro } from "@/components/layout/section-intro";
 import { buildNotesHref } from "@/lib/note-links";
-import { noteStatusMeta } from "@/lib/note-status";
+import { noteStatusMeta, type NoteStatusValue } from "@/lib/note-status";
 import { ReviewListPanel } from "./review-list-panel";
 import { StatLinkCard } from "./stat-link-card";
 
@@ -19,7 +18,7 @@ type DashboardStatsProps = {
     needsReview: number;
     overdue: number;
     explainable: number;
-    statusCounts: Array<{ status: NoteStatus; count: number }>;
+    statusCounts: Array<{ status: NoteStatusValue; count: number }>;
     topTags: Array<{ tag: string; count: number }>;
     weeklyThemes: Array<{ tag: string; count: number }>;
   };

@@ -1,8 +1,7 @@
 "use client";
 
-import { NoteStatus } from "@prisma/client";
 import { type NoteFormValues } from "@/lib/note-form-values";
-import { noteStatusOptions } from "@/lib/note-status";
+import { noteStatusOptions, type NoteStatusValue } from "@/lib/note-status";
 import { MarkdownEditorField, type MarkdownTool } from "./markdown-editor-field";
 import { NoteFormHeader } from "./note-form-header";
 import { NoteFormField, NoteFormSection } from "./note-form-ui";
@@ -191,7 +190,7 @@ export function NoteForm({ mode, noteId, initialValues }: NoteFormProps) {
                 name="status"
                 value={values.status}
                 onChange={(event) =>
-                  updateField("status", event.target.value as NoteStatus)
+                  updateField("status", event.target.value as NoteStatusValue)
                 }
                 className="field-control cursor-pointer"
               >
