@@ -1,5 +1,6 @@
 import { NoteStatus, Prisma } from "@prisma/client";
 import type { DashboardStatRecord } from "./note-repository";
+import { createReviewDateFromLocalParts } from "./review-date";
 import type { NoteListQuery } from "./validation";
 
 export type NoteStats = {
@@ -155,8 +156,8 @@ export function getNextReviewIntervalDays(reviewCount: number) {
 }
 
 export function getNextReviewDueAt(reviewCount: number, baseDate = new Date()) {
-  const nextDate = startOfToday(baseDate);
-  nextDate.setDate(nextDate.getDate() + getNextReviewIntervalDays(reviewCount));
+  const nextDate = createReviewDateFromLocalParts(baseDate);
+  nextDate.setUTCDate(nextDate.getUTCDate() + getNextReviewIntervalDays(reviewCount));
   return nextDate;
 }
 

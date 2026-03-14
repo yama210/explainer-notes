@@ -1,5 +1,6 @@
 import { NoteStatus } from "@prisma/client";
 import { z } from "zod";
+import { createReviewDate } from "./review-date";
 import { sortOptions } from "./note-status";
 
 export const noteStatusSchema = z.nativeEnum(NoteStatus);
@@ -33,7 +34,7 @@ function parseReviewDueAt(value: string | Date | null | undefined) {
   const year = Number(match[1]);
   const month = Number(match[2]);
   const day = Number(match[3]);
-  const parsed = new Date(Date.UTC(year, month - 1, day));
+  const parsed = createReviewDate(year, month - 1, day);
 
   if (
     parsed.getUTCFullYear() !== year ||

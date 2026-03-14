@@ -204,7 +204,7 @@ describe("note helpers", () => {
 
     expect(getNextReviewIntervalDays(0)).toBe(1);
     expect(getNextReviewIntervalDays(1)).toBe(3);
-    expect(getNextReviewDueAt(0)).toEqual(new Date(2026, 2, 9, 0, 0, 0));
-    expect(getNextReviewDueAt(2)).toEqual(new Date(2026, 2, 15, 0, 0, 0));
+    expect(getNextReviewDueAt(0).toISOString()).toBe("2026-03-09T12:00:00.000Z");
+    expect(getNextReviewDueAt(2).toISOString()).toBe("2026-03-15T12:00:00.000Z");
   });
 });

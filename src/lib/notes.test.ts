@@ -305,7 +305,7 @@ describe("notes service", () => {
       expect.objectContaining({
         status: NoteStatus.EXPLAINABLE,
         reviewCount: 2,
-        reviewDueAt: new Date(2026, 2, 14, 0, 0, 0),
+        reviewDueAt: new Date("2026-03-14T12:00:00.000Z"),
       }),
     );
     expect(result.intervalDays).toBe(3);

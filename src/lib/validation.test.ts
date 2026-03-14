@@ -29,9 +29,7 @@ describe("noteInputSchema", () => {
 
     expect(parsed.tags).toEqual(["auth", "web"]);
     expect(parsed.reviewDueAt).toBeInstanceOf(Date);
-    expect(parsed.reviewDueAt?.getFullYear()).toBe(2026);
-    expect(parsed.reviewDueAt?.getMonth()).toBe(2);
-    expect(parsed.reviewDueAt?.getDate()).toBe(20);
+    expect(parsed.reviewDueAt?.toISOString()).toBe("2026-03-20T12:00:00.000Z");
   });
 
   it("accepts ISO date strings sent from the API client", () => {
@@ -49,9 +47,7 @@ describe("noteInputSchema", () => {
     });
 
     expect(parsed.reviewDueAt).toBeInstanceOf(Date);
-    expect(parsed.reviewDueAt?.getFullYear()).toBe(2026);
-    expect(parsed.reviewDueAt?.getMonth()).toBe(2);
-    expect(parsed.reviewDueAt?.getDate()).toBe(20);
+    expect(parsed.reviewDueAt?.toISOString()).toBe("2026-03-20T12:00:00.000Z");
   });
 
   it("rejects missing reviewDueAt when needsReview is true", () => {
