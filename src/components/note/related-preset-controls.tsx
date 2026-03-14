@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { buildNoteDetailHref } from "@/lib/note-links";
@@ -26,6 +25,15 @@ export function RelatedPresetControls({
 }: RelatedPresetControlsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  function navigateToPreset(preset: RelatedNotePreset) {
+    localStorage.setItem(STORAGE_KEY, preset);
+    router.push(
+      buildNoteDetailHref(noteId, {
+        relatedPreset: preset,
+      }),
+    );
+  }
 
   useEffect(() => {
     const explicitPreset = searchParams.get("related");
@@ -59,12 +67,10 @@ export function RelatedPresetControls({
       {(Object.keys(presetLabels) as RelatedNotePreset[]).map((preset) => {
         const isActive = preset === currentPreset;
         return (
-          <Link
+          <button
             key={preset}
-            href={buildNoteDetailHref(noteId, {
-              relatedPreset: preset,
-            })}
-            onClick={() => localStorage.setItem(STORAGE_KEY, preset)}
+            type="button"
+            onClick={() => navigateToPreset(preset)}
             className={cn(
               "rounded-md px-3 py-1.5 font-medium transition-colors",
               isActive
@@ -73,7 +79,7 @@ export function RelatedPresetControls({
             )}
           >
             {presetLabels[preset]}
-          </Link>
+          </button>
         );
       })}
     </div>
