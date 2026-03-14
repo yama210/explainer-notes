@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, type MouseEvent } from "react";
 import { buildNoteDetailHref } from "@/lib/note-links";
 import type { RelatedNotePreset } from "@/lib/notes";
 import { cn } from "@/lib/utils";
@@ -19,25 +20,55 @@ const presetLabels: Record<RelatedNotePreset, string> = {
   concept_focused: "説明文重視",
 };
 
+function isRelatedNotePreset(value: string | null): value is RelatedNotePreset {
+  return (
+    value === "balanced" ||
+    value === "tag_focused" ||
+    value === "concept_focused"
+  );
+}
+
+function shouldHandleClientNavigation(event: MouseEvent<HTMLAnchorElement>) {
+  return !(
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  );
+}
+
+function getPresetHref(noteId: string, preset: RelatedNotePreset) {
+  return buildNoteDetailHref(noteId, {
+    relatedPreset: preset,
+  });
+}
+
 export function RelatedPresetControls({
   noteId,
   currentPreset,
 }: RelatedPresetControlsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const explicitPreset = searchParams.get("related");
 
-  function navigateToPreset(preset: RelatedNotePreset) {
+  function handlePresetNavigation(
+    event: MouseEvent<HTMLAnchorElement>,
+    preset: RelatedNotePreset,
+    href: string,
+  ) {
     localStorage.setItem(STORAGE_KEY, preset);
-    router.push(
-      buildNoteDetailHref(noteId, {
-        relatedPreset: preset,
-      }),
-    );
+
+    if (!shouldHandleClientNavigation(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    router.push(href);
   }
 
   useEffect(() => {
-    const explicitPreset = searchParams.get("related");
-
     if (explicitPreset) {
       localStorage.setItem(STORAGE_KEY, explicitPreset);
       return;
@@ -45,32 +76,27 @@ export function RelatedPresetControls({
 
     const storedPreset = localStorage.getItem(STORAGE_KEY);
     if (
-      storedPreset &&
-      (storedPreset === "balanced" ||
-        storedPreset === "tag_focused" ||
-        storedPreset === "concept_focused") &&
+      isRelatedNotePreset(storedPreset) &&
       storedPreset !== currentPreset
     ) {
-      router.replace(
-        buildNoteDetailHref(noteId, {
-          relatedPreset: storedPreset,
-        }),
-      );
+      router.replace(getPresetHref(noteId, storedPreset));
       return;
     }
 
     localStorage.setItem(STORAGE_KEY, currentPreset);
-  }, [currentPreset, noteId, router, searchParams]);
+  }, [currentPreset, explicitPreset, noteId, router]);
 
   return (
     <div className="flex flex-wrap gap-1 rounded-lg border border-[var(--line-light)] bg-[var(--surface)] p-1 text-sm">
       {(Object.keys(presetLabels) as RelatedNotePreset[]).map((preset) => {
         const isActive = preset === currentPreset;
+        const href = getPresetHref(noteId, preset);
+
         return (
-          <button
+          <Link
             key={preset}
-            type="button"
-            onClick={() => navigateToPreset(preset)}
+            href={href}
+            onClick={(event) => handlePresetNavigation(event, preset, href)}
             className={cn(
               "rounded-md px-3 py-1.5 font-medium transition-colors",
               isActive
@@ -79,7 +105,7 @@ export function RelatedPresetControls({
             )}
           >
             {presetLabels[preset]}
-          </button>
+          </Link>
         );
       })}
     </div>
